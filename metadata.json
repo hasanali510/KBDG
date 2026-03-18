@@ -1,0 +1,5 @@
+{
+  "name": "Khansama Blood Donation",
+  "description": "A complete Blood Donation Mobile App and Admin Panel Web App.",
+  "requestFramePermissions": ["geolocation"]
+}
