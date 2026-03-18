@@ -17,6 +17,8 @@ import Leaderboard from '@/pages/mobile/Leaderboard';
 import DonationHistory from '@/pages/mobile/DonationHistory';
 import { Chat } from '@/pages/mobile/Chat';
 import { DonationGuide } from '@/pages/mobile/DonationGuide';
+import VolunteerForm from '@/pages/mobile/VolunteerForm';
+import FundDonation from '@/pages/mobile/FundDonation';
 
 // Admin Pages
 import AdminDashboard from '@/pages/admin/AdminDashboard';
@@ -24,6 +26,8 @@ import AdminUsers from '@/pages/admin/AdminUsers';
 import AdminRequests from '@/pages/admin/AdminRequests';
 import AdminAnalytics from '@/pages/admin/AdminAnalytics';
 import AdminSettings from '@/pages/admin/AdminSettings';
+import AdminVolunteers from '@/pages/admin/AdminVolunteers';
+import AdminDonations from '@/pages/admin/AdminDonations';
 
 export default function App() {
   const { currentUser, theme } = useAppStore();
@@ -56,6 +60,8 @@ export default function App() {
           <Route path="/donations" element={<DonationHistory />} />
           <Route path="/chat/:requestId" element={<Chat />} />
           <Route path="/guide" element={<DonationGuide />} />
+          <Route path="/volunteer" element={<VolunteerForm />} />
+          <Route path="/donate-fund" element={<FundDonation />} />
           <Route path="/profile" element={<Profile />} />
         </Route>
 
@@ -66,6 +72,8 @@ export default function App() {
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="users" element={<AdminUsers />} />
           <Route path="requests" element={<AdminRequests />} />
+          <Route path="volunteers" element={<AdminVolunteers />} />
+          <Route path="donations" element={<AdminDonations />} />
           <Route path="analytics" element={<AdminAnalytics />} />
           <Route path="settings" element={<AdminSettings />} />
           <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />

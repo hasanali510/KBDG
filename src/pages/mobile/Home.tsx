@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAppStore } from '@/store/useAppStore';
-import { Droplet, Heart, Activity, AlertCircle, MapPin, Clock, ChevronRight, Search, Phone, Zap, Users, Award, Trophy, Moon, Sun, BookOpen } from 'lucide-react';
+import { Droplet, Heart, Activity, AlertCircle, MapPin, Clock, ChevronRight, Search, Phone, Zap, Users, Award, Trophy, Moon, Sun, BookOpen, UserPlus, Wallet } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -145,6 +145,8 @@ export default function Home() {
           <ActionBtn icon={<Droplet className="text-rose-500" fill="currentColor" />} label="রক্ত দিন" bg="bg-rose-50" onClick={() => navigate('/requests')} />
           <ActionBtn icon={<Trophy className="text-amber-500" />} label="লিডারবোর্ড" bg="bg-amber-50" onClick={() => navigate('/leaderboard')} />
           <ActionBtn icon={<BookOpen className="text-emerald-500" />} label="নির্দেশিকা" bg="bg-emerald-50" onClick={() => navigate('/guide')} />
+          <ActionBtn icon={<UserPlus className="text-indigo-500" />} label="সেচ্ছাসেবী" bg="bg-indigo-50" onClick={() => navigate('/volunteer')} />
+          <ActionBtn icon={<Wallet className="text-rose-600" />} label="তহবিল" bg="bg-rose-50" onClick={() => navigate('/donate-fund')} />
         </div>
       </div>
     </div>

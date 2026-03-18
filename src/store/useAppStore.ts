@@ -60,6 +60,27 @@ export type ChatMessage = {
   createdAt: string;
 };
 
+export type VolunteerApplication = {
+  id: string;
+  userId: string;
+  name: string;
+  phone: string;
+  reason: string;
+  status: 'pending' | 'approved' | 'rejected';
+  createdAt: string;
+};
+
+export type FundDonation = {
+  id: string;
+  userId: string | null;
+  name: string;
+  amount: number;
+  paymentMethod: string;
+  transactionId: string;
+  date: string;
+  status: 'pending' | 'verified';
+};
+
 interface AppState {
   currentUser: User | null;
   users: User[];
@@ -67,6 +88,8 @@ interface AppState {
   notifications: Notification[];
   donations: DonationRecord[];
   messages: ChatMessage[];
+  volunteerApplications: VolunteerApplication[];
+  fundDonations: FundDonation[];
   theme: 'light' | 'dark';
   login: (user: User) => void;
   logout: () => void;
@@ -84,6 +107,10 @@ interface AppState {
   sendNotification: (userId: string, title: string, message: string) => void;
   updateRequestStatus: (id: string, status: BloodRequest['status']) => void;
   sendMessage: (requestId: string, text: string) => void;
+  applyAsVolunteer: (application: Omit<VolunteerApplication, 'id' | 'status' | 'createdAt'>) => void;
+  donateToFund: (donation: Omit<FundDonation, 'id' | 'date' | 'status'>) => void;
+  updateVolunteerStatus: (id: string, status: VolunteerApplication['status']) => void;
+  verifyFundDonation: (id: string) => void;
   toggleTheme: () => void;
 }
 
@@ -195,6 +222,8 @@ export const useAppStore = create<AppState>((set) => ({
   notifications: mockNotifications,
   donations: [],
   messages: [],
+  volunteerApplications: [],
+  fundDonations: [],
   theme: 'light',
   login: (user) => set({ currentUser: user }),
   logout: () => set({ currentUser: null }),
@@ -276,6 +305,34 @@ export const useAppStore = create<AppState>((set) => ({
         createdAt: new Date().toISOString(),
       }
     ]
+  })),
+  applyAsVolunteer: (application) => set((state) => ({
+    volunteerApplications: [
+      {
+        ...application,
+        id: Math.random().toString(36).substring(7),
+        status: 'pending',
+        createdAt: new Date().toISOString(),
+      },
+      ...state.volunteerApplications
+    ]
+  })),
+  donateToFund: (donation) => set((state) => ({
+    fundDonations: [
+      {
+        ...donation,
+        id: Math.random().toString(36).substring(7),
+        status: 'pending',
+        date: new Date().toISOString(),
+      },
+      ...state.fundDonations
+    ]
+  })),
+  updateVolunteerStatus: (id, status) => set((state) => ({
+    volunteerApplications: state.volunteerApplications.map(a => a.id === id ? { ...a, status } : a)
+  })),
+  verifyFundDonation: (id) => set((state) => ({
+    fundDonations: state.fundDonations.map(d => d.id === id ? { ...d, status: 'verified' } : d)
   })),
   toggleTheme: () => set((state) => ({ theme: state.theme === 'light' ? 'dark' : 'light' })),
   toggleDonorStatus: () => set((state) => ({

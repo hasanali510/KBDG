@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Users, Droplet, Activity, Settings, LogOut, Menu, X } from 'lucide-react';
+import { LayoutDashboard, Users, Droplet, Activity, Settings, LogOut, Menu, X, UserPlus, Wallet } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 
 export default function AdminLayout() {
@@ -50,6 +50,8 @@ export default function AdminLayout() {
           <NavItem to="/admin/dashboard" icon={<LayoutDashboard size={20} />} label="ড্যাশবোর্ড" onClick={() => setIsSidebarOpen(false)} />
           <NavItem to="/admin/users" icon={<Users size={20} />} label="ব্যবহারকারী" onClick={() => setIsSidebarOpen(false)} />
           <NavItem to="/admin/requests" icon={<Droplet size={20} />} label="রক্তের অনুরোধ" onClick={() => setIsSidebarOpen(false)} />
+          <NavItem to="/admin/volunteers" icon={<UserPlus size={20} />} label="সেচ্ছাসেবী আবেদন" onClick={() => setIsSidebarOpen(false)} />
+          <NavItem to="/admin/donations" icon={<Wallet size={20} />} label="তহবিল অনুদান" onClick={() => setIsSidebarOpen(false)} />
           <NavItem to="/admin/analytics" icon={<Activity size={20} />} label="অ্যানালিটিক্স" onClick={() => setIsSidebarOpen(false)} />
           <NavItem to="/admin/settings" icon={<Settings size={20} />} label="সেটিংস" onClick={() => setIsSidebarOpen(false)} />
         </nav>
