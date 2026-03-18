@@ -1,9 +1,11 @@
 import React from 'react';
 import { useAppStore } from '@/store/useAppStore';
 import { Award, Trophy, Medal, Star, ArrowUpRight, ChevronRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 export default function Leaderboard() {
   const { users } = useAppStore();
+  const navigate = useNavigate();
 
   // Sort users by donationsCount
   const topDonors = [...users]

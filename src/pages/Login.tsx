@@ -5,11 +5,35 @@ import { useAppStore } from '@/store/useAppStore';
 
 export default function Login() {
   const [email, setEmail] = useState('john@example.com');
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [regData, setRegData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    bloodGroup: 'A+',
+    location: ''
+  });
   const navigate = useNavigate();
-  const { users, login } = useAppStore();
+  const { users, login, register } = useAppStore();
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
+    if (isRegistering) {
+      if (!regData.name || !regData.email || !regData.phone) {
+        alert('অনুগ্রহ করে সব তথ্য দিন');
+        return;
+      }
+      register({
+        ...regData,
+        avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(regData.name)}&background=random`,
+        isDonor: false,
+        isAvailable: true,
+        hidePhone: false,
+      });
+      navigate('/home');
+      return;
+    }
+
     const user = users.find(u => u.email === email);
     if (user) {
       login(user);
@@ -74,17 +98,66 @@ export default function Login() {
 
           <div className="bg-white/90 backdrop-blur-2xl p-8 lg:p-10 rounded-[2.5rem] shadow-2xl border border-white shadow-rose-500/5">
             <div className="mb-8">
-              <h2 className="text-3xl font-black text-slate-800 mb-2">স্বাগতম</h2>
-              <p className="text-slate-500 font-medium">আপনার অ্যাকাউন্টে লগইন করুন</p>
+              <h2 className="text-3xl font-black text-slate-800 mb-2">{isRegistering ? 'নতুন অ্যাকাউন্ট' : 'স্বাগতম'}</h2>
+              <p className="text-slate-500 font-medium">{isRegistering ? 'আপনার তথ্য দিয়ে নিবন্ধন করুন' : 'আপনার অ্যাকাউন্টে লগইন করুন'}</p>
             </div>
             
             <form onSubmit={handleLogin} className="space-y-6">
+              {isRegistering && (
+                <>
+                  <div>
+                    <label className="block text-sm font-bold text-slate-700 mb-2 ml-1">নাম</label>
+                    <input 
+                      type="text" 
+                      value={regData.name}
+                      onChange={(e) => setRegData({...regData, name: e.target.value})}
+                      className="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-200 focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10 outline-none transition-all font-medium text-slate-800"
+                      placeholder="আপনার নাম লিখুন"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-slate-700 mb-2 ml-1">মোবাইল নম্বর</label>
+                    <input 
+                      type="text" 
+                      value={regData.phone}
+                      onChange={(e) => setRegData({...regData, phone: e.target.value})}
+                      className="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-200 focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10 outline-none transition-all font-medium text-slate-800"
+                      placeholder="আপনার মোবাইল নম্বর লিখুন"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-bold text-slate-700 mb-2 ml-1">রক্তের গ্রুপ</label>
+                      <select 
+                        value={regData.bloodGroup}
+                        onChange={(e) => setRegData({...regData, bloodGroup: e.target.value})}
+                        className="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-200 focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10 outline-none transition-all font-bold text-slate-800"
+                      >
+                        {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map(bg => (
+                          <option key={bg} value={bg}>{bg}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-bold text-slate-700 mb-2 ml-1">লোকেশন</label>
+                      <input 
+                        type="text" 
+                        value={regData.location}
+                        onChange={(e) => setRegData({...regData, location: e.target.value})}
+                        className="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-200 focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10 outline-none transition-all font-medium text-slate-800"
+                        placeholder="যেমন: ঢাকা"
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
+
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2 ml-1">ইমেইল বা ফোন</label>
+                <label className="block text-sm font-bold text-slate-700 mb-2 ml-1">ইমেইল</label>
                 <input 
-                  type="text" 
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  type="email" 
+                  value={isRegistering ? regData.email : email}
+                  onChange={(e) => isRegistering ? setRegData({...regData, email: e.target.value}) : setEmail(e.target.value)}
                   className="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-200 focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10 outline-none transition-all font-medium text-slate-800"
                   placeholder="আপনার ইমেইল লিখুন"
                 />
@@ -94,13 +167,19 @@ export default function Login() {
                 type="submit"
                 className="w-full bg-gradient-to-r from-rose-500 to-pink-500 text-white font-black py-5 rounded-2xl shadow-xl shadow-rose-500/30 hover:shadow-rose-500/50 hover:-translate-y-1 active:scale-95 transition-all flex items-center justify-center gap-3 text-lg"
               >
-                এগিয়ে যান <ArrowRight className="w-6 h-6" />
+                {isRegistering ? 'নিবন্ধন করুন' : 'এগিয়ে যান'} <ArrowRight className="w-6 h-6" />
               </button>
             </form>
 
             <div className="mt-10 pt-8 border-t border-slate-100 text-center">
               <p className="text-slate-500 font-medium">
-                অ্যাকাউন্ট নেই? <span className="text-rose-500 font-black cursor-pointer hover:underline">নিবন্ধন করুন</span>
+                {isRegistering ? 'অ্যাকাউন্ট আছে? ' : 'অ্যাকাউন্ট নেই? '}
+                <span 
+                  onClick={() => setIsRegistering(!isRegistering)}
+                  className="text-rose-500 font-black cursor-pointer hover:underline"
+                >
+                  {isRegistering ? 'লগইন করুন' : 'নিবন্ধন করুন'}
+                </span>
               </p>
             </div>
           </div>

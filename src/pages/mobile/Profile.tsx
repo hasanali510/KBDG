@@ -1,16 +1,61 @@
+import React, { useState, useRef } from 'react';
 import { useAppStore } from '@/store/useAppStore';
-import { LogOut, Settings, Edit3, Droplet, Calendar, Award, ShieldCheck, Heart, MapPin, ArrowRight, Activity, Trophy } from 'lucide-react';
+import { LogOut, Settings, Edit3, Droplet, Calendar, Award, ShieldCheck, Heart, MapPin, ArrowRight, Activity, Trophy, Camera, Check, FileText, Download, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 export default function Profile() {
-  const { currentUser, logout, toggleDonorStatus, toggleAvailability, togglePhonePrivacy } = useAppStore();
+  const { currentUser, logout, toggleDonorStatus, toggleAvailability, togglePhonePrivacy, updateUser } = useAppStore();
   const navigate = useNavigate();
+  
+  const [isEditingBio, setIsEditingBio] = useState(false);
+  const [bioText, setBioText] = useState(currentUser?.bio || '');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const idCardRef = useRef<HTMLDivElement>(null);
 
   if (!currentUser) return null;
 
   const handleLogout = () => {
     logout();
     navigate('/login');
+  };
+
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        updateUser(currentUser.id, { avatar: reader.result as string });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const saveBio = () => {
+    updateUser(currentUser.id, { bio: bioText });
+    setIsEditingBio(false);
+  };
+
+  const requestIDCard = () => {
+    updateUser(currentUser.id, { idCardStatus: 'pending' });
+  };
+
+  const downloadIDCard = async () => {
+    if (!idCardRef.current) return;
+    try {
+      const canvas = await html2canvas(idCardRef.current, { scale: 3, useCORS: true });
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: [54, 86] // Standard ID card size
+      });
+      pdf.addImage(imgData, 'PNG', 0, 0, 54, 86);
+      pdf.save(`ID_Card_${currentUser.name}.pdf`);
+    } catch (error) {
+      console.error('Error generating PDF', error);
+    }
   };
 
   return (
@@ -29,16 +74,68 @@ export default function Profile() {
         
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 relative z-10">
           <div className="relative">
-            <img src={currentUser.avatar} alt="Profile" className="w-24 h-24 rounded-[2rem] object-cover border-4 border-white shadow-md" />
-            <button className="absolute -bottom-2 -right-2 w-10 h-10 bg-rose-500 rounded-2xl flex items-center justify-center text-white border-4 border-white shadow-sm hover:bg-rose-600 transition-colors">
-              <Edit3 className="w-5 h-5" />
+            <img src={currentUser.avatar} alt="Profile" className="w-24 h-24 rounded-[2rem] object-cover border-4 border-white shadow-md bg-white" />
+            <button 
+              onClick={() => fileInputRef.current?.click()}
+              className="absolute -bottom-2 -right-2 w-10 h-10 bg-rose-500 rounded-2xl flex items-center justify-center text-white border-4 border-white shadow-sm hover:bg-rose-600 transition-colors"
+            >
+              <Camera className="w-5 h-5" />
             </button>
+            <input 
+              type="file" 
+              ref={fileInputRef} 
+              onChange={handlePhotoUpload} 
+              accept="image/*" 
+              className="hidden" 
+            />
           </div>
-          <div className="text-center sm:text-left flex-1 min-w-0">
+          <div className="text-center sm:text-left flex-1 min-w-0 w-full">
             <h3 className="text-2xl font-black text-slate-800 mb-1">{currentUser.name}</h3>
             <p className="text-sm text-slate-500 font-bold flex items-center justify-center sm:justify-start gap-1">
               <MapPin className="w-4 h-4 text-rose-500" /> {currentUser.location}
             </p>
+            
+            {/* Bio Section */}
+            <div className="mt-4 w-full">
+              {isEditingBio ? (
+                <div className="flex flex-col gap-2">
+                  <textarea 
+                    value={bioText}
+                    onChange={(e) => setBioText(e.target.value)}
+                    placeholder="আপনার সম্পর্কে কিছু লিখুন..."
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm text-slate-700 focus:outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 resize-none"
+                    rows={3}
+                  />
+                  <div className="flex gap-2 justify-end">
+                    <button 
+                      onClick={() => setIsEditingBio(false)}
+                      className="p-2 bg-slate-100 text-slate-600 rounded-xl hover:bg-slate-200 transition-colors"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                    <button 
+                      onClick={saveBio}
+                      className="p-2 bg-rose-500 text-white rounded-xl hover:bg-rose-600 transition-colors"
+                    >
+                      <Check className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="group relative">
+                  <p className="text-sm text-slate-600 italic px-2 border-l-2 border-rose-200">
+                    {currentUser.bio ? `"${currentUser.bio}"` : "কোনো বায়ো যুক্ত করা হয়নি।"}
+                  </p>
+                  <button 
+                    onClick={() => setIsEditingBio(true)}
+                    className="absolute -top-2 -right-2 p-1.5 bg-slate-100 text-slate-500 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-rose-50 hover:text-rose-500"
+                  >
+                    <Edit3 className="w-3 h-3" />
+                  </button>
+                </div>
+              )}
+            </div>
+
             <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mt-4">
               <span className="px-4 py-1.5 bg-rose-500 text-white rounded-xl text-xs font-black shadow-lg shadow-rose-500/20">
                 {currentUser.bloodGroup}
@@ -96,6 +193,87 @@ export default function Profile() {
           </p>
           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">সর্বশেষ রক্তদান</p>
         </div>
+      </div>
+
+      {/* ID Card Section */}
+      <div className="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden p-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-rose-50 rounded-xl flex items-center justify-center text-rose-500">
+              <FileText className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="font-black text-slate-800">ভার্চুয়াল আইডি কার্ড</h3>
+              <p className="text-xs text-slate-500 font-bold">আপনার রক্তদাতা পরিচয়পত্র</p>
+            </div>
+          </div>
+        </div>
+
+        {!currentUser.idCardStatus || currentUser.idCardStatus === 'none' ? (
+          <button 
+            onClick={requestIDCard}
+            className="w-full bg-rose-500 text-white font-black py-3 rounded-2xl shadow-lg shadow-rose-500/20 hover:bg-rose-600 transition-colors"
+          >
+            আইডি কার্ডের জন্য আবেদন করুন
+          </button>
+        ) : currentUser.idCardStatus === 'pending' ? (
+          <div className="bg-amber-50 border border-amber-200 text-amber-700 p-4 rounded-2xl text-center font-bold text-sm">
+            আপনার আবেদনটি অনুমোদনের অপেক্ষায় আছে।
+          </div>
+        ) : currentUser.idCardStatus === 'rejected' ? (
+          <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-2xl text-center font-bold text-sm">
+            আপনার আবেদনটি বাতিল করা হয়েছে।
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {/* The ID Card */}
+            <div className="flex justify-center overflow-hidden py-4">
+              <div 
+                ref={idCardRef}
+                className="w-[216px] h-[344px] bg-white rounded-xl shadow-lg relative overflow-hidden border border-slate-200"
+                style={{ backgroundImage: 'url("https://www.transparenttextures.com/patterns/cubes.png")' }}
+              >
+                {/* Header */}
+                <div className="bg-rose-600 text-white text-center py-3 px-2">
+                  <h4 className="font-black text-sm">রক্তদাতা পরিচয়পত্র</h4>
+                  <p className="text-[8px] opacity-90">জীবন রক্ষাকারী রক্তদাতা</p>
+                </div>
+                
+                {/* Photo */}
+                <div className="flex justify-center mt-4">
+                  <img src={currentUser.avatar} alt="Profile" className="w-20 h-20 rounded-full border-4 border-rose-100 object-cover bg-white" />
+                </div>
+                
+                {/* Info */}
+                <div className="text-center px-4 mt-3">
+                  <h5 className="font-black text-slate-800 text-sm truncate">{currentUser.name}</h5>
+                  <p className="text-[10px] text-slate-500 font-bold mt-0.5">{currentUser.phone}</p>
+                  
+                  <div className="mt-4 inline-block bg-rose-100 text-rose-600 font-black text-xl px-4 py-1 rounded-lg border border-rose-200">
+                    {currentUser.bloodGroup}
+                  </div>
+                  
+                  <div className="mt-4 text-left">
+                    <p className="text-[8px] text-slate-400 font-bold uppercase">ঠিকানা</p>
+                    <p className="text-[10px] text-slate-700 font-bold truncate">{currentUser.location}</p>
+                  </div>
+                </div>
+                
+                {/* Footer */}
+                <div className="absolute bottom-0 w-full bg-slate-800 text-white text-center py-2">
+                  <p className="text-[8px] font-bold">ID: BD-{currentUser.id.slice(0, 6).toUpperCase()}</p>
+                </div>
+              </div>
+            </div>
+            
+            <button 
+              onClick={downloadIDCard}
+              className="w-full bg-slate-800 text-white font-black py-3 rounded-2xl shadow-lg hover:bg-slate-900 transition-colors flex items-center justify-center gap-2"
+            >
+              <Download className="w-5 h-5" /> পিডিএফ ডাউনলোড করুন
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Settings List */}

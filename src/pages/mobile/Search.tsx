@@ -164,10 +164,14 @@ export default function Search() {
         ) : (
           <div className="grid grid-cols-1 gap-6">
             {donors.map(donor => (
-              <div key={donor.id} className="bg-white p-6 rounded-[2.5rem] shadow-xl shadow-slate-200/40 border border-slate-100 flex items-center justify-between group hover:shadow-2xl transition-all">
+              <div 
+                key={donor.id} 
+                onClick={() => navigate(`/user/${donor.id}`)}
+                className="bg-white p-6 rounded-[2.5rem] shadow-xl shadow-slate-200/40 border border-slate-100 flex items-center justify-between group hover:shadow-2xl transition-all cursor-pointer"
+              >
                 <div className="flex items-center gap-5">
                   <div className="relative">
-                    <img src={donor.avatar} alt={donor.name} className="w-16 h-16 rounded-2xl object-cover border-2 border-white shadow-md" />
+                    <img src={donor.avatar} alt={donor.name} className="w-16 h-16 rounded-2xl object-cover border-2 border-white shadow-md bg-white" />
                     <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-4 border-white shadow-sm ${donor.isAvailable ? 'bg-emerald-500' : 'bg-slate-300'}`}></div>
                   </div>
                   <div>
@@ -191,6 +195,12 @@ export default function Search() {
                 
                 <button 
                   disabled={!donor.isAvailable}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (donor.isAvailable) {
+                      window.location.href = `tel:${donor.phone}`;
+                    }
+                  }}
                   className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all shadow-lg active:scale-90 ${
                     donor.isAvailable 
                       ? 'bg-slate-900 text-white shadow-slate-900/20 hover:bg-slate-800' 

@@ -19,6 +19,9 @@ import { Chat } from '@/pages/mobile/Chat';
 import { DonationGuide } from '@/pages/mobile/DonationGuide';
 import VolunteerForm from '@/pages/mobile/VolunteerForm';
 import FundDonation from '@/pages/mobile/FundDonation';
+import Committee from '@/pages/mobile/Committee';
+import AboutUs from '@/pages/mobile/AboutUs';
+import PublicProfile from '@/pages/mobile/PublicProfile';
 
 // Admin Pages
 import AdminDashboard from '@/pages/admin/AdminDashboard';
@@ -62,7 +65,10 @@ export default function App() {
           <Route path="/guide" element={<DonationGuide />} />
           <Route path="/volunteer" element={<VolunteerForm />} />
           <Route path="/donate-fund" element={<FundDonation />} />
+          <Route path="/committee" element={<Committee />} />
+          <Route path="/about" element={<AboutUs />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/user/:id" element={<PublicProfile />} />
         </Route>
 
         {/* Admin Panel Routes */}

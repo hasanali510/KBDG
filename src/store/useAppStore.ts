@@ -15,6 +15,9 @@ export type User = {
   donationsCount: number;
   role: 'user' | 'admin';
   badges: string[];
+  isVerified?: boolean;
+  bio?: string;
+  idCardStatus?: 'none' | 'pending' | 'approved' | 'rejected';
 };
 
 export type BloodRequest = {
@@ -92,8 +95,10 @@ interface AppState {
   fundDonations: FundDonation[];
   theme: 'light' | 'dark';
   login: (user: User) => void;
+  register: (user: Omit<User, 'id' | 'donationsCount' | 'role' | 'badges' | 'lastDonationDate' | 'isVerified'>) => void;
   logout: () => void;
   updateProfile: (updates: Partial<User>) => void;
+  updateUser: (id: string, updates: Partial<User>) => void;
   addRequest: (request: Omit<BloodRequest, 'id' | 'createdAt' | 'status' | 'acceptedById'>) => void;
   cancelRequest: (requestId: string) => void;
   acceptRequest: (requestId: string, donorId: string) => void;
@@ -226,10 +231,29 @@ export const useAppStore = create<AppState>((set) => ({
   fundDonations: [],
   theme: 'light',
   login: (user) => set({ currentUser: user }),
+  register: (userData) => set((state) => {
+    const newUser: User = {
+      ...userData,
+      id: Math.random().toString(36).substring(7),
+      donationsCount: 0,
+      role: 'user',
+      badges: [],
+      lastDonationDate: null,
+      isVerified: false
+    };
+    return {
+      users: [newUser, ...state.users],
+      currentUser: newUser
+    };
+  }),
   logout: () => set({ currentUser: null }),
   updateProfile: (updates) => set((state) => ({
     currentUser: state.currentUser ? { ...state.currentUser, ...updates } : null,
     users: state.users.map(u => u.id === state.currentUser?.id ? { ...u, ...updates } : u)
+  })),
+  updateUser: (id, updates) => set((state) => ({
+    users: state.users.map(u => u.id === id ? { ...u, ...updates } : u),
+    currentUser: state.currentUser?.id === id ? { ...state.currentUser, ...updates } : state.currentUser
   })),
   addRequest: (request) => set((state) => ({
     requests: [

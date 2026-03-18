@@ -5,7 +5,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 
 export default function Requests() {
-  const { requests, currentUser, acceptRequest, completeRequest, cancelRequest } = useAppStore();
+  const { requests, users, currentUser, acceptRequest, completeRequest, cancelRequest } = useAppStore();
   const [filter, setFilter] = useState<'all' | 'my'>('all');
   const navigate = useNavigate();
 
@@ -87,6 +87,12 @@ export default function Requests() {
                     </div>
                     <div>
                       <h3 className="font-black text-slate-800 text-xl leading-tight">{req.patientName}</h3>
+                      <div 
+                        onClick={() => navigate(`/user/${req.requesterId}`)}
+                        className="text-xs text-rose-500 font-bold mt-1 cursor-pointer hover:underline"
+                      >
+                        অনুরোধকারী: {users.find(u => u.id === req.requesterId)?.name || 'অজানা'}
+                      </div>
                       <p className="text-[10px] text-slate-400 font-black flex items-center gap-1 mt-1 uppercase tracking-widest">
                         <Clock className="w-3 h-3" /> {formatDistanceToNow(new Date(req.createdAt))} আগে
                       </p>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAppStore } from '@/store/useAppStore';
-import { Droplet, Heart, Activity, AlertCircle, MapPin, Clock, ChevronRight, Search, Phone, Zap, Users, Award, Trophy, Moon, Sun, BookOpen, UserPlus, Wallet } from 'lucide-react';
+import { Droplet, Heart, Activity, AlertCircle, MapPin, Clock, ChevronRight, Search, Phone, Zap, Users, Award, Trophy, Moon, Sun, BookOpen, UserPlus, Wallet, Info } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -120,16 +120,26 @@ export default function Home() {
         </div>
         <div className="grid grid-cols-2 gap-4">
           {nearbyDonors.map(donor => (
-            <div key={donor.id} className="bg-white p-4 rounded-3xl shadow-sm border border-slate-100 flex flex-col items-center text-center group hover:shadow-md transition-all">
+            <div 
+              key={donor.id} 
+              onClick={() => navigate(`/user/${donor.id}`)}
+              className="bg-white p-4 rounded-3xl shadow-sm border border-slate-100 flex flex-col items-center text-center group hover:shadow-md transition-all cursor-pointer"
+            >
               <div className="relative mb-3">
-                <img src={donor.avatar} alt={donor.name} className="w-16 h-16 rounded-2xl object-cover border-2 border-white shadow-md" />
+                <img src={donor.avatar} alt={donor.name} className="w-16 h-16 rounded-2xl object-cover border-2 border-white shadow-md bg-white" />
                 <div className="absolute -top-2 -right-2 w-8 h-8 bg-rose-500 rounded-xl flex items-center justify-center text-white text-xs font-black border-2 border-white shadow-sm">
                   {donor.bloodGroup}
                 </div>
               </div>
               <p className="font-black text-slate-800 text-sm truncate w-full">{donor.name}</p>
               <p className="text-[10px] text-slate-400 font-bold mb-3 truncate w-full">{donor.location.split(',')[0]}</p>
-              <button className="w-full bg-slate-50 text-slate-600 font-black py-2 rounded-xl text-[10px] hover:bg-rose-50 hover:text-rose-500 transition-colors flex items-center justify-center gap-1">
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  window.location.href = `tel:${donor.phone}`;
+                }}
+                className="w-full bg-slate-50 text-slate-600 font-black py-2 rounded-xl text-[10px] hover:bg-rose-50 hover:text-rose-500 transition-colors flex items-center justify-center gap-1"
+              >
                 <Phone className="w-3 h-3" /> কল করুন
               </button>
             </div>
@@ -147,6 +157,8 @@ export default function Home() {
           <ActionBtn icon={<BookOpen className="text-emerald-500" />} label="নির্দেশিকা" bg="bg-emerald-50" onClick={() => navigate('/guide')} />
           <ActionBtn icon={<UserPlus className="text-indigo-500" />} label="সেচ্ছাসেবী" bg="bg-indigo-50" onClick={() => navigate('/volunteer')} />
           <ActionBtn icon={<Wallet className="text-rose-600" />} label="তহবিল" bg="bg-rose-50" onClick={() => navigate('/donate-fund')} />
+          <ActionBtn icon={<Users className="text-purple-500" />} label="কমিটি" bg="bg-purple-50" onClick={() => navigate('/committee')} />
+          <ActionBtn icon={<Info className="text-teal-500" />} label="আমাদের সম্পর্কে" bg="bg-teal-50" onClick={() => navigate('/about')} />
         </div>
       </div>
     </div>

@@ -91,23 +91,33 @@ export default function MobileLayout() {
         </main>
 
         {/* Mobile Bottom Navigation - Hidden on Desktop */}
-        <nav className="md:hidden fixed bottom-0 w-full bg-white/95 backdrop-blur-xl rounded-t-[2rem] shadow-[0_-10px_40px_rgba(255,77,109,0.08)] px-6 py-3 flex justify-between items-center z-20 border-t border-rose-100/50 pb-5">
-          <NavItem to="/home" icon={<Home size={22} strokeWidth={2.5} />} label="হোম" />
-          <NavItem to="/search" icon={<Search size={22} strokeWidth={2.5} />} label="খুঁজুন" />
+        <nav className="md:hidden fixed bottom-0 w-full bg-white/95 backdrop-blur-xl rounded-t-[2rem] shadow-[0_-10px_40px_rgba(255,77,109,0.08)] px-2 pt-4 pb-3 grid grid-cols-5 items-center z-20 border-t border-rose-100/50">
+          <div className="flex justify-center">
+            <NavItem to="/home" icon={<Home size={22} strokeWidth={2.5} />} label="হোম" />
+          </div>
+          <div className="flex justify-center">
+            <NavItem to="/search" icon={<Search size={22} strokeWidth={2.5} />} label="খুঁজুন" />
+          </div>
           
           {/* Floating Action Button for Request */}
-          <div className="relative -top-5 flex flex-col items-center">
-            <button 
-              onClick={() => navigate('/request')}
-              className="w-14 h-14 bg-gradient-to-tr from-rose-500 to-pink-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-rose-500/40 hover:scale-105 active:scale-95 transition-all duration-300 border-4 border-white"
-            >
-              <PlusCircle className="w-7 h-7" />
-            </button>
-            <span className="text-[9px] font-bold text-rose-500 mt-1">অনুরোধ</span>
+          <div className="flex justify-center relative w-full h-full">
+            <div className="flex flex-col items-center absolute -top-8 left-1/2 -translate-x-1/2">
+              <button 
+                onClick={() => navigate('/request')}
+                className="w-14 h-14 bg-gradient-to-tr from-rose-500 to-pink-500 rounded-full flex items-center justify-center text-white shadow-lg shadow-rose-500/40 hover:scale-105 active:scale-95 transition-all duration-300 border-4 border-white"
+              >
+                <PlusCircle className="w-6 h-6" />
+              </button>
+              <span className="text-[10px] font-black text-rose-500 mt-1">অনুরোধ</span>
+            </div>
           </div>
 
-          <NavItem to="/requests" icon={<Droplet size={22} strokeWidth={2.5} />} label="অনুরোধসমূহ" />
-          <NavItem to="/profile" icon={<User size={22} strokeWidth={2.5} />} label="প্রোফাইল" />
+          <div className="flex justify-center">
+            <NavItem to="/requests" icon={<Droplet size={22} strokeWidth={2.5} />} label="অনুরোধ" />
+          </div>
+          <div className="flex justify-center">
+            <NavItem to="/profile" icon={<User size={22} strokeWidth={2.5} />} label="প্রোফাইল" />
+          </div>
         </nav>
       </div>
     </div>
