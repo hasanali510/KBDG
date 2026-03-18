@@ -4,6 +4,7 @@ import { LogOut, Settings, Edit3, Droplet, Calendar, Award, ShieldCheck, Heart, 
 import { useNavigate } from 'react-router-dom';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import Logo from '@/assets/Logo.png';
 
 export default function Profile() {
   const { currentUser, logout, toggleDonorStatus, toggleAvailability, togglePhonePrivacy, updateUser } = useAppStore();
@@ -41,20 +42,27 @@ export default function Profile() {
     updateUser(currentUser.id, { idCardStatus: 'pending' });
   };
 
-  const downloadIDCard = async () => {
+  const downloadIDCard = async (format: 'pdf' | 'png') => {
     if (!idCardRef.current) return;
     try {
       const canvas = await html2canvas(idCardRef.current, { scale: 3, useCORS: true });
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: [54, 86] // Standard ID card size
-      });
-      pdf.addImage(imgData, 'PNG', 0, 0, 54, 86);
-      pdf.save(`ID_Card_${currentUser.name}.pdf`);
+      if (format === 'png') {
+        const link = document.createElement('a');
+        link.download = `ID_Card_${currentUser.name}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      } else {
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF({
+          orientation: 'portrait',
+          unit: 'mm',
+          format: [54, 86]
+        });
+        pdf.addImage(imgData, 'PNG', 0, 0, 54, 86);
+        pdf.save(`ID_Card_${currentUser.name}.pdf`);
+      }
     } catch (error) {
-      console.error('Error generating PDF', error);
+      console.error('Error generating file', error);
     }
   };
 
@@ -230,48 +238,94 @@ export default function Profile() {
             <div className="flex justify-center overflow-hidden py-4">
               <div 
                 ref={idCardRef}
-                className="w-[216px] h-[344px] bg-white rounded-xl shadow-lg relative overflow-hidden border border-slate-200"
-                style={{ backgroundImage: 'url("https://www.transparenttextures.com/patterns/cubes.png")' }}
+                style={{ 
+                  width: '216px',
+                  height: '344px',
+                  borderRadius: '12px',
+                  boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  backgroundImage: 'url("https://www.transparenttextures.com/patterns/cubes.png")',
+                  backgroundColor: '#ffffff',
+                  border: '1px solid #e2e8f0',
+                  fontFamily: 'sans-serif'
+                }}
               >
-                {/* Header */}
-                <div className="bg-rose-600 text-white text-center py-3 px-2">
-                  <h4 className="font-black text-sm">রক্তদাতা পরিচয়পত্র</h4>
-                  <p className="text-[8px] opacity-90">জীবন রক্ষাকারী রক্তদাতা</p>
+                {/* Logo and Header */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', padding: '8px' }}>
+                  <img src={Logo} alt="Logo" style={{ width: '40px', height: '40px', objectFit: 'contain' }} />
+                  <div>
+                    <h4 style={{ fontWeight: 900, fontSize: '12px', margin: 0, color: '#e11d48' }}>খানসামা</h4>
+                    <p style={{ fontSize: '8px', color: '#64748b', margin: 0 }}>রক্তদান গ্রুপ</p>
+                  </div>
                 </div>
                 
                 {/* Photo */}
-                <div className="flex justify-center mt-4">
-                  <img src={currentUser.avatar} alt="Profile" className="w-20 h-20 rounded-full border-4 border-rose-100 object-cover bg-white" />
+                <div style={{ display: 'flex', justifyContent: 'center', marginTop: '16px' }}>
+                  <img src={currentUser.avatar} alt="Profile" style={{ 
+                    width: '80px', 
+                    height: '80px', 
+                    borderRadius: '50%', 
+                    border: '4px solid #fecdd3', 
+                    objectFit: 'cover', 
+                    backgroundColor: '#ffffff' 
+                  }} />
                 </div>
                 
                 {/* Info */}
-                <div className="text-center px-4 mt-3">
-                  <h5 className="font-black text-slate-800 text-sm truncate">{currentUser.name}</h5>
-                  <p className="text-[10px] text-slate-500 font-bold mt-0.5">{currentUser.phone}</p>
+                <div style={{ textAlign: 'center', padding: '0 16px', marginTop: '12px' }}>
+                  <h5 style={{ fontWeight: 900, fontSize: '14px', margin: 0, color: '#1e293b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{currentUser.name}</h5>
+                  <p style={{ fontSize: '10px', fontWeight: 700, marginTop: '2px', color: '#64748b', margin: 0 }}>{currentUser.phone}</p>
                   
-                  <div className="mt-4 inline-block bg-rose-100 text-rose-600 font-black text-xl px-4 py-1 rounded-lg border border-rose-200">
+                  <div style={{ 
+                    marginTop: '16px', 
+                    display: 'inline-block', 
+                    fontWeight: 900, 
+                    fontSize: '20px', 
+                    padding: '4px 16px', 
+                    borderRadius: '8px', 
+                    border: '1px solid #fecdd3',
+                    backgroundColor: '#ffe4e6', 
+                    color: '#e11d48' 
+                  }}>
                     {currentUser.bloodGroup}
                   </div>
                   
-                  <div className="mt-4 text-left">
-                    <p className="text-[8px] text-slate-400 font-bold uppercase">ঠিকানা</p>
-                    <p className="text-[10px] text-slate-700 font-bold truncate">{currentUser.location}</p>
+                  <div style={{ marginTop: '16px', textAlign: 'left' }}>
+                    <p style={{ fontSize: '8px', fontWeight: 700, textTransform: 'uppercase', color: '#94a3b8', margin: 0 }}>ঠিকানা</p>
+                    <p style={{ fontSize: '10px', fontWeight: 700, color: '#334155', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{currentUser.location}</p>
                   </div>
                 </div>
                 
-                {/* Footer */}
-                <div className="absolute bottom-0 w-full bg-slate-800 text-white text-center py-2">
-                  <p className="text-[8px] font-bold">ID: BD-{currentUser.id.slice(0, 6).toUpperCase()}</p>
+                {/* ID Number */}
+                <div style={{ 
+                  position: 'absolute', 
+                  bottom: '40px', 
+                  width: '100%', 
+                  textAlign: 'center', 
+                  padding: '8px 0', 
+                  color: '#64748b'
+                }}>
+                  <p style={{ fontSize: '8px', fontWeight: 700, margin: 0 }}>ID: BD-{currentUser.id.slice(0, 6).toUpperCase()}</p>
+                </div>
+
+                {/* Signature */}
+                <div style={{ marginTop: 'auto', textAlign: 'right', position: 'absolute', bottom: '16px', right: '16px' }}>
+                  <div style={{ borderTop: '1px solid #334155', width: '80px', display: 'inline-block' }}></div>
+                  <p style={{ fontSize: '7px', color: '#334155', margin: 0 }}>Authorized Signature</p>
                 </div>
               </div>
             </div>
             
-            <button 
-              onClick={downloadIDCard}
-              className="w-full bg-slate-800 text-white font-black py-3 rounded-2xl shadow-lg hover:bg-slate-900 transition-colors flex items-center justify-center gap-2"
-            >
-              <Download className="w-5 h-5" /> পিডিএফ ডাউনলোড করুন
-            </button>
+            {/* Download Buttons */}
+            <div className="flex gap-2">
+              <button onClick={() => downloadIDCard('pdf')} className="flex-1 bg-rose-500 text-white font-black py-3 rounded-2xl shadow-lg shadow-rose-500/20 hover:bg-rose-600 transition-colors flex items-center justify-center gap-2">
+                <Download size={18} /> PDF
+              </button>
+              <button onClick={() => downloadIDCard('png')} className="flex-1 bg-slate-800 text-white font-black py-3 rounded-2xl shadow-lg shadow-slate-800/20 hover:bg-slate-900 transition-colors flex items-center justify-center gap-2">
+                <Download size={18} /> PNG
+              </button>
+            </div>
           </div>
         )}
       </div>
@@ -377,6 +431,23 @@ export default function Profile() {
             </div>
           </div>
           <ArrowRight className="w-5 h-5 text-slate-300 group-hover:text-amber-500 transition-colors" />
+        </button>
+
+        {/* Donate to Fund Link */}
+        <button 
+          onClick={() => navigate('/donate-fund')}
+          className="w-full p-6 flex items-center justify-between border-b border-slate-50 hover:bg-rose-50/50 transition-colors text-left group"
+        >
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-rose-50 rounded-2xl flex items-center justify-center text-rose-500 shadow-sm group-hover:bg-rose-100 transition-colors">
+              <Heart className="w-6 h-6" />
+            </div>
+            <div>
+              <p className="font-black text-slate-800">তহবিলে অনুদান</p>
+              <p className="text-xs text-slate-500 font-bold">আমাদের সেবামূলক কাজে সহায়তা করুন</p>
+            </div>
+          </div>
+          <ArrowRight className="w-5 h-5 text-slate-300 group-hover:text-rose-500 transition-colors" />
         </button>
 
         {/* Admin Panel Link */}

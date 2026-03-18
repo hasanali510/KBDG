@@ -1,9 +1,11 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '@/store/useAppStore';
 import { Search as SearchIcon, MapPin, Phone, Droplet, Filter, Sparkles, Loader2 } from 'lucide-react';
 import { GoogleGenAI } from "@google/genai";
 
 export default function Search() {
+  const navigate = useNavigate();
   const { users, currentUser } = useAppStore();
   const [bloodGroup, setBloodGroup] = useState('');
   const [location, setLocation] = useState('');

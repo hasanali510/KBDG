@@ -2,6 +2,7 @@ import React from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { Home, Search, PlusCircle, User, Bell, Droplet } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
+import Logo from '@/assets/Logo.png';
 
 export default function MobileLayout() {
   const { currentUser, notifications } = useAppStore();
@@ -14,8 +15,8 @@ export default function MobileLayout() {
       {/* Desktop Sidebar Navigation */}
       <aside className="hidden md:flex w-72 bg-white border-r border-rose-100 flex-col sticky top-0 h-screen shadow-sm">
         <div className="p-8 flex items-center gap-3 border-b border-rose-50">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-rose-500 to-pink-500 flex items-center justify-center text-white font-bold text-2xl shadow-lg shadow-rose-200">
-            KB
+          <div className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg shadow-rose-200 overflow-hidden">
+            <img src={Logo} alt="Logo" className="w-full h-full object-cover" />
           </div>
           <div>
             <h1 className="font-bold text-xl text-slate-800 leading-tight">খানসামা</h1>
@@ -66,8 +67,8 @@ export default function MobileLayout() {
         {/* Mobile Top App Bar - Hidden on Desktop */}
         <header className="md:hidden bg-gradient-to-r from-rose-500 to-pink-500 text-white px-6 py-5 flex justify-between items-center rounded-b-3xl shadow-lg shadow-rose-500/20 z-10">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center backdrop-blur-md border border-white/30 shadow-inner">
-              <span className="font-bold text-lg tracking-wider">KB</span>
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center backdrop-blur-md border border-white/30 shadow-inner overflow-hidden bg-white">
+              <img src={Logo} alt="Logo" className="w-full h-full object-cover" />
             </div>
             <div>
               <h1 className="font-bold text-lg leading-tight tracking-wide">খানসামা</h1>

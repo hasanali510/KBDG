@@ -220,197 +220,208 @@ const mockNotifications: Notification[] = [
   }
 ];
 
-export const useAppStore = create<AppState>((set) => ({
-  currentUser: null,
-  users: mockUsers,
-  requests: mockRequests,
-  notifications: mockNotifications,
-  donations: [],
-  messages: [],
-  volunteerApplications: [],
-  fundDonations: [],
-  theme: 'light',
-  login: (user) => set({ currentUser: user }),
-  register: (userData) => set((state) => {
-    const newUser: User = {
-      ...userData,
-      id: Math.random().toString(36).substring(7),
-      donationsCount: 0,
-      role: 'user',
-      badges: [],
-      lastDonationDate: null,
-      isVerified: false
-    };
-    return {
-      users: [newUser, ...state.users],
-      currentUser: newUser
-    };
-  }),
-  logout: () => set({ currentUser: null }),
-  updateProfile: (updates) => set((state) => ({
-    currentUser: state.currentUser ? { ...state.currentUser, ...updates } : null,
-    users: state.users.map(u => u.id === state.currentUser?.id ? { ...u, ...updates } : u)
-  })),
-  updateUser: (id, updates) => set((state) => ({
-    users: state.users.map(u => u.id === id ? { ...u, ...updates } : u),
-    currentUser: state.currentUser?.id === id ? { ...state.currentUser, ...updates } : state.currentUser
-  })),
-  addRequest: (request) => set((state) => ({
-    requests: [
-      {
-        ...request,
-        id: Math.random().toString(36).substring(7),
-        status: 'pending',
-        acceptedById: null,
-        createdAt: new Date().toISOString(),
-      },
-      ...state.requests,
-    ],
-  })),
-  cancelRequest: (requestId) => set((state) => ({
-    requests: state.requests.map((req) =>
-      req.id === requestId ? { ...req, status: 'cancelled' } : req
-    ),
-  })),
-  acceptRequest: (requestId, donorId) => set((state) => ({
-    requests: state.requests.map((req) =>
-      req.id === requestId ? { ...req, status: 'accepted', acceptedById: donorId } : req
-    ),
-  })),
-  completeRequest: (requestId) => set((state) => ({
-    requests: state.requests.map((req) =>
-      req.id === requestId ? { ...req, status: 'completed' } : req
-    ),
-    donations: [
-      ...state.donations,
-      ...(state.requests
-        .filter(r => r.id === requestId && r.acceptedById)
-        .map(r => ({
+import { persist } from 'zustand/middleware';
+
+// ... (keep the types)
+
+export const useAppStore = create<AppState>()(
+  persist(
+    (set) => ({
+      currentUser: null,
+      users: mockUsers,
+      requests: mockRequests,
+      notifications: mockNotifications,
+      donations: [],
+      messages: [],
+      volunteerApplications: [],
+      fundDonations: [],
+      theme: 'light',
+      login: (user) => set({ currentUser: user }),
+      register: (userData) => set((state) => {
+        const newUser: User = {
+          ...userData,
           id: Math.random().toString(36).substring(7),
-          donorId: r.acceptedById!,
-          requestId: r.id,
-          date: new Date().toISOString(),
-          bloodGroup: r.bloodGroup,
-          location: r.hospitalName,
-          patientName: r.patientName,
-          status: 'pending' as const,
-        })))
-    ],
-    users: state.users.map((user) => {
-      const req = state.requests.find(r => r.id === requestId);
-      if (req && req.acceptedById === user.id) {
-        const newCount = user.donationsCount + 1;
-        const newBadges = [...user.badges];
-        if (newCount === 1) newBadges.push('প্রথম রক্তদান');
-        if (newCount === 5) newBadges.push('৫ বার রক্তদান');
-        if (newCount === 10) newBadges.push('রক্তদাতা হিরো');
-        
-        return { 
-          ...user, 
-          donationsCount: newCount, 
-          lastDonationDate: new Date().toISOString(),
-          badges: newBadges
+          donationsCount: 0,
+          role: 'user',
+          badges: [],
+          lastDonationDate: null,
+          isVerified: false
         };
-      }
-      return user;
-    })
-  })),
-  updateRequestStatus: (id, status) => set((state) => ({
-    requests: state.requests.map(r => r.id === id ? { ...r, status } : r)
-  })),
-  sendMessage: (requestId, text) => set((state) => ({
-    messages: [
-      ...state.messages,
-      {
-        id: Math.random().toString(36).substring(7),
-        requestId,
-        senderId: state.currentUser?.id || '',
-        text,
-        createdAt: new Date().toISOString(),
-      }
-    ]
-  })),
-  applyAsVolunteer: (application) => set((state) => ({
-    volunteerApplications: [
-      {
-        ...application,
-        id: Math.random().toString(36).substring(7),
-        status: 'pending',
-        createdAt: new Date().toISOString(),
-      },
-      ...state.volunteerApplications
-    ]
-  })),
-  donateToFund: (donation) => set((state) => ({
-    fundDonations: [
-      {
-        ...donation,
-        id: Math.random().toString(36).substring(7),
-        status: 'pending',
-        date: new Date().toISOString(),
-      },
-      ...state.fundDonations
-    ]
-  })),
-  updateVolunteerStatus: (id, status) => set((state) => ({
-    volunteerApplications: state.volunteerApplications.map(a => a.id === id ? { ...a, status } : a)
-  })),
-  verifyFundDonation: (id) => set((state) => ({
-    fundDonations: state.fundDonations.map(d => d.id === id ? { ...d, status: 'verified' } : d)
-  })),
-  toggleTheme: () => set((state) => ({ theme: state.theme === 'light' ? 'dark' : 'light' })),
-  toggleDonorStatus: () => set((state) => ({
-    currentUser: state.currentUser ? { ...state.currentUser, isDonor: !state.currentUser.isDonor } : null,
-    users: state.users.map(u => u.id === state.currentUser?.id ? { ...u, isDonor: !u.isDonor } : u)
-  })),
-  toggleAvailability: () => set((state) => ({
-    currentUser: state.currentUser ? { ...state.currentUser, isAvailable: !state.currentUser.isAvailable } : null,
-    users: state.users.map(u => u.id === state.currentUser?.id ? { ...u, isAvailable: !u.isAvailable } : u)
-  })),
-  togglePhonePrivacy: () => set((state) => ({
-    currentUser: state.currentUser ? { ...state.currentUser, hidePhone: !state.currentUser.hidePhone } : null,
-    users: state.users.map(u => u.id === state.currentUser?.id ? { ...u, hidePhone: !u.hidePhone } : u)
-  })),
-  addNotification: (notification) => set((state) => ({
-    notifications: [
-      {
-        ...notification,
-        id: Math.random().toString(36).substring(7),
-        read: false,
-        createdAt: new Date().toISOString(),
-      },
-      ...state.notifications,
-    ],
-  })),
-  markNotificationRead: (id) => set((state) => ({
-    notifications: state.notifications.map((n) =>
-      n.id === id ? { ...n, read: true } : n
-    ),
-  })),
-  broadcastNotification: (title, message) => set((state) => ({
-    notifications: [
-      ...state.users.map(user => ({
-        id: Math.random().toString(36).substring(7),
-        userId: user.id,
-        title,
-        message,
-        read: false,
-        createdAt: new Date().toISOString()
+        return {
+          users: [newUser, ...state.users],
+          currentUser: newUser
+        };
+      }),
+      logout: () => set({ currentUser: null }),
+      updateProfile: (updates) => set((state) => ({
+        currentUser: state.currentUser ? { ...state.currentUser, ...updates } : null,
+        users: state.users.map(u => u.id === state.currentUser?.id ? { ...u, ...updates } : u)
       })),
-      ...state.notifications
-    ]
-  })),
-  sendNotification: (userId, title, message) => set((state) => ({
-    notifications: [
-      {
-        id: Math.random().toString(36).substring(7),
-        userId,
-        title,
-        message,
-        read: false,
-        createdAt: new Date().toISOString()
-      },
-      ...state.notifications
-    ]
-  })),
-}));
+      updateUser: (id, updates) => set((state) => ({
+        users: state.users.map(u => u.id === id ? { ...u, ...updates } : u),
+        currentUser: state.currentUser?.id === id ? { ...state.currentUser, ...updates } : state.currentUser
+      })),
+      addRequest: (request) => set((state) => ({
+        requests: [
+          {
+            ...request,
+            id: Math.random().toString(36).substring(7),
+            status: 'pending',
+            acceptedById: null,
+            createdAt: new Date().toISOString(),
+          },
+          ...state.requests,
+        ],
+      })),
+      cancelRequest: (requestId) => set((state) => ({
+        requests: state.requests.map((req) =>
+          req.id === requestId ? { ...req, status: 'cancelled' } : req
+        ),
+      })),
+      acceptRequest: (requestId, donorId) => set((state) => ({
+        requests: state.requests.map((req) =>
+          req.id === requestId ? { ...req, status: 'accepted', acceptedById: donorId } : req
+        ),
+      })),
+      completeRequest: (requestId) => set((state) => ({
+        requests: state.requests.map((req) =>
+          req.id === requestId ? { ...req, status: 'completed' } : req
+        ),
+        donations: [
+          ...state.donations,
+          ...(state.requests
+            .filter(r => r.id === requestId && r.acceptedById)
+            .map(r => ({
+              id: Math.random().toString(36).substring(7),
+              donorId: r.acceptedById!,
+              requestId: r.id,
+              date: new Date().toISOString(),
+              bloodGroup: r.bloodGroup,
+              location: r.hospitalName,
+              patientName: r.patientName,
+              status: 'pending' as const,
+            })))
+        ],
+        users: state.users.map((user) => {
+          const req = state.requests.find(r => r.id === requestId);
+          if (req && req.acceptedById === user.id) {
+            const newCount = user.donationsCount + 1;
+            const newBadges = [...user.badges];
+            if (newCount === 1) newBadges.push('প্রথম রক্তদান');
+            if (newCount === 5) newBadges.push('৫ বার রক্তদান');
+            if (newCount === 10) newBadges.push('রক্তদাতা হিরো');
+            
+            return { 
+              ...user, 
+              donationsCount: newCount, 
+              lastDonationDate: new Date().toISOString(),
+              badges: newBadges
+            };
+          }
+          return user;
+        })
+      })),
+      updateRequestStatus: (id, status) => set((state) => ({
+        requests: state.requests.map(r => r.id === id ? { ...r, status } : r)
+      })),
+      sendMessage: (requestId, text) => set((state) => ({
+        messages: [
+          ...state.messages,
+          {
+            id: Math.random().toString(36).substring(7),
+            requestId,
+            senderId: state.currentUser?.id || '',
+            text,
+            createdAt: new Date().toISOString(),
+          }
+        ]
+      })),
+      applyAsVolunteer: (application) => set((state) => ({
+        volunteerApplications: [
+          {
+            ...application,
+            id: Math.random().toString(36).substring(7),
+            status: 'pending',
+            createdAt: new Date().toISOString(),
+          },
+          ...state.volunteerApplications
+        ]
+      })),
+      donateToFund: (donation) => set((state) => ({
+        fundDonations: [
+          {
+            ...donation,
+            id: Math.random().toString(36).substring(7),
+            status: 'pending',
+            date: new Date().toISOString(),
+          },
+          ...state.fundDonations
+        ]
+      })),
+      updateVolunteerStatus: (id, status) => set((state) => ({
+        volunteerApplications: state.volunteerApplications.map(a => a.id === id ? { ...a, status } : a)
+      })),
+      verifyFundDonation: (id) => set((state) => ({
+        fundDonations: state.fundDonations.map(d => d.id === id ? { ...d, status: 'verified' } : d)
+      })),
+      toggleTheme: () => set((state) => ({ theme: state.theme === 'light' ? 'dark' : 'light' })),
+      toggleDonorStatus: () => set((state) => ({
+        currentUser: state.currentUser ? { ...state.currentUser, isDonor: !state.currentUser.isDonor } : null,
+        users: state.users.map(u => u.id === state.currentUser?.id ? { ...u, isDonor: !u.isDonor } : u)
+      })),
+      toggleAvailability: () => set((state) => ({
+        currentUser: state.currentUser ? { ...state.currentUser, isAvailable: !state.currentUser.isAvailable } : null,
+        users: state.users.map(u => u.id === state.currentUser?.id ? { ...u, isAvailable: !u.isAvailable } : u)
+      })),
+      togglePhonePrivacy: () => set((state) => ({
+        currentUser: state.currentUser ? { ...state.currentUser, hidePhone: !state.currentUser.hidePhone } : null,
+        users: state.users.map(u => u.id === state.currentUser?.id ? { ...u, hidePhone: !u.hidePhone } : u)
+      })),
+      addNotification: (notification) => set((state) => ({
+        notifications: [
+          {
+            ...notification,
+            id: Math.random().toString(36).substring(7),
+            read: false,
+            createdAt: new Date().toISOString(),
+          },
+          ...state.notifications,
+        ],
+      })),
+      markNotificationRead: (id) => set((state) => ({
+        notifications: state.notifications.map((n) =>
+          n.id === id ? { ...n, read: true } : n
+        ),
+      })),
+      broadcastNotification: (title, message) => set((state) => ({
+        notifications: [
+          ...state.users.map(user => ({
+            id: Math.random().toString(36).substring(7),
+            userId: user.id,
+            title,
+            message,
+            read: false,
+            createdAt: new Date().toISOString()
+          })),
+          ...state.notifications
+        ]
+      })),
+      sendNotification: (userId, title, message) => set((state) => ({
+        notifications: [
+          {
+            id: Math.random().toString(36).substring(7),
+            userId,
+            title,
+            message,
+            read: false,
+            createdAt: new Date().toISOString()
+          },
+          ...state.notifications
+        ]
+      })),
+    }),
+    {
+      name: 'blood-donation-app-storage',
+    }
+  )
+);

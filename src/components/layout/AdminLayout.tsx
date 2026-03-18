@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, Users, Droplet, Activity, Settings, LogOut, Menu, X, UserPlus, Wallet } from 'lucide-react';
+import Logo from '@/assets/Logo.png';
 import { useAppStore } from '@/store/useAppStore';
 
 export default function AdminLayout() {
@@ -33,8 +34,8 @@ export default function AdminLayout() {
       `}>
         <div className="p-8 flex items-center justify-between border-b border-slate-100">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-rose-500 to-pink-500 flex items-center justify-center text-white font-bold text-xl shadow-md shadow-rose-200">
-              KB
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-md overflow-hidden">
+              <img src={Logo} alt="Logo" className="w-full h-full object-cover" />
             </div>
             <div>
               <h1 className="font-bold text-slate-800 leading-tight">খানসামা</h1>
