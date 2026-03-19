@@ -148,11 +148,11 @@ export default function AdminRequests() {
                     </div>
                   </td>
                   <td className="p-6 text-right">
-                    <div className="flex items-center justify-end gap-3 opacity-0 group-hover:opacity-100 transition-all">
+                    <div className="flex items-center justify-end gap-3 transition-all">
                       {req.status === 'pending' && (
                         <button 
                           onClick={() => handleStatusChange(req.id, 'accepted')}
-                          className="p-3 text-blue-500 hover:bg-blue-50 rounded-2xl transition-all active:scale-90"
+                          className="p-3 bg-blue-100 text-blue-600 hover:bg-blue-200 rounded-2xl transition-all active:scale-90"
                           title="গ্রহণ করুন"
                         >
                           <CheckCircle2 className="w-5 h-5" />
@@ -161,7 +161,7 @@ export default function AdminRequests() {
                       {req.status === 'accepted' && (
                         <button 
                           onClick={() => handleStatusChange(req.id, 'completed')}
-                          className="p-3 text-emerald-500 hover:bg-emerald-50 rounded-2xl transition-all active:scale-90"
+                          className="p-3 bg-emerald-100 text-emerald-600 hover:bg-emerald-200 rounded-2xl transition-all active:scale-90"
                           title="সম্পন্ন করুন"
                         >
                           <CheckCircle2 className="w-5 h-5" />
@@ -169,12 +169,12 @@ export default function AdminRequests() {
                       )}
                       <button 
                         onClick={() => handleDelete(req.id)}
-                        className="p-3 text-red-500 hover:bg-red-50 rounded-2xl transition-all active:scale-90"
+                        className="p-3 bg-red-100 text-red-600 hover:bg-red-200 rounded-2xl transition-all active:scale-90"
                         title="ডিলিট করুন"
                       >
                         <Trash2 className="w-5 h-5" />
                       </button>
-                      <button className="p-3 text-slate-400 hover:bg-slate-100 rounded-2xl transition-all active:scale-90">
+                      <button className="p-3 bg-slate-100 text-slate-600 hover:bg-slate-200 rounded-2xl transition-all active:scale-90">
                         <MoreVertical className="w-5 h-5" />
                       </button>
                     </div>

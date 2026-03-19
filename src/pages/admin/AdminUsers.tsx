@@ -4,6 +4,17 @@ import { Search, Filter, MoreVertical, Edit2, Trash2, ShieldCheck, UserX, Bell, 
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
+const getBadgeStyle = (badge: string) => {
+  switch (badge) {
+    case 'রক্তদাতা হিরো': return { icon: Award, bg: 'bg-amber-100', text: 'text-amber-700' };
+    case '৫ বার রক্তদান': return { icon: Droplet, bg: 'bg-rose-100', text: 'text-rose-700' };
+    case 'প্রথম রক্তদান': return { icon: CheckCircle2, bg: 'bg-blue-100', text: 'text-blue-700' };
+    case '১০ বার রক্তদান': return { icon: ShieldCheck, bg: 'bg-emerald-100', text: 'text-emerald-700' };
+    case 'সুপার ডোনার': return { icon: BadgeCheck, bg: 'bg-purple-100', text: 'text-purple-700' };
+    default: return { icon: Award, bg: 'bg-slate-100', text: 'text-slate-700' };
+  }
+};
+
 export default function AdminUsers() {
   const { users, sendNotification, updateUser } = useAppStore();
   const [searchQuery, setSearchQuery] = useState('');
@@ -132,12 +143,15 @@ export default function AdminUsers() {
                         </div>
                         <p className="text-xs text-slate-400 font-bold">{user.location}</p>
                         {user.badges && user.badges.length > 0 && (
-                          <div className="flex gap-1 mt-1">
-                            {user.badges.map((badge, idx) => (
-                              <span key={idx} className="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-bold flex items-center gap-1">
-                                <Award className="w-3 h-3" /> {badge}
-                              </span>
-                            ))}
+                          <div className="flex gap-1 mt-1 flex-wrap">
+                            {user.badges.map((badge, idx) => {
+                              const { icon: Icon, bg, text } = getBadgeStyle(badge);
+                              return (
+                                <span key={idx} className={`text-[10px] ${bg} ${text} px-2 py-0.5 rounded-full font-bold flex items-center gap-1`}>
+                                  <Icon className="w-3 h-3" /> {badge}
+                                </span>
+                              );
+                            })}
                           </div>
                         )}
                       </div>
@@ -190,22 +204,22 @@ export default function AdminUsers() {
                     )}
                   </td>
                   <td className="p-6 text-right">
-                    <div className="flex items-center justify-end gap-3 opacity-0 group-hover:opacity-100 transition-all">
+                    <div className="flex items-center justify-end gap-3 transition-all">
                       <button 
                         onClick={() => setSelectedUser(user.id)}
-                        className="p-3 text-amber-500 hover:bg-amber-50 rounded-2xl transition-all active:scale-90"
+                        className="p-3 bg-amber-100 text-amber-600 hover:bg-amber-200 rounded-2xl transition-all active:scale-90"
                         title="নোটিফিকেশন পাঠান"
                       >
                         <Bell className="w-5 h-5" />
                       </button>
                       <button 
                         onClick={() => setEditingUser(user)}
-                        className="p-3 text-blue-500 hover:bg-blue-50 rounded-2xl transition-all active:scale-90" 
+                        className="p-3 bg-blue-100 text-blue-600 hover:bg-blue-200 rounded-2xl transition-all active:scale-90" 
                         title="এডিট করুন"
                       >
                         <Edit2 className="w-5 h-5" />
                       </button>
-                      <button className="p-3 text-red-500 hover:bg-red-50 rounded-2xl transition-all active:scale-90" title="ডিলিট করুন">
+                      <button className="p-3 bg-red-100 text-red-600 hover:bg-red-200 rounded-2xl transition-all active:scale-90" title="ডিলিট করুন">
                         <Trash2 className="w-5 h-5" />
                       </button>
                     </div>
@@ -301,126 +315,6 @@ export default function AdminUsers() {
                   <Edit2 className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-black text-slate-800">অ্যাকাউন্ট এডিট করুন</h3>
-                  <p className="text-xs text-slate-500 font-bold">ব্যবহারকারীর তথ্য পরিবর্তন করুন</p>
-                </div>
-              </div>
-              <button onClick={() => setEditingUser(null)} className="p-3 hover:bg-white rounded-2xl transition-colors">
-                <XCircle className="w-6 h-6 text-slate-300" />
-              </button>
-            </div>
-            
-            <form onSubmit={handleUpdateUser} className="p-8 space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">নাম</label>
-                  <input 
-                    type="text" 
-                    required
-                    value={editingUser.name}
-                    onChange={e => setEditingUser({...editingUser, name: e.target.value})}
-                    className="w-full px-6 py-4 rounded-2xl bg-slate-50 border-2 border-slate-50 focus:border-blue-200 focus:bg-white outline-none transition-all font-bold text-slate-700"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">মোবাইল নম্বর</label>
-                  <input 
-                    type="text" 
-                    required
-                    value={editingUser.phone}
-                    onChange={e => setEditingUser({...editingUser, phone: e.target.value})}
-                    className="w-full px-6 py-4 rounded-2xl bg-slate-50 border-2 border-slate-50 focus:border-blue-200 focus:bg-white outline-none transition-all font-bold text-slate-700"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">রক্তের গ্রুপ</label>
-                  <select 
-                    value={editingUser.bloodGroup}
-                    onChange={e => setEditingUser({...editingUser, bloodGroup: e.target.value})}
-                    className="w-full px-6 py-4 rounded-2xl bg-slate-50 border-2 border-slate-50 focus:border-blue-200 focus:bg-white outline-none transition-all font-bold text-slate-700"
-                  >
-                    {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map(bg => (
-                      <option key={bg} value={bg}>{bg}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">লোকেশন</label>
-                  <input 
-                    type="text" 
-                    required
-                    value={editingUser.location}
-                    onChange={e => setEditingUser({...editingUser, location: e.target.value})}
-                    className="w-full px-6 py-4 rounded-2xl bg-slate-50 border-2 border-slate-50 focus:border-blue-200 focus:bg-white outline-none transition-all font-bold text-slate-700"
-                  />
-                </div>
-                
-                <div className="space-y-2 md:col-span-2">
-                  <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">অ্যাকাউন্ট স্ট্যাটাস</label>
-                  <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-2xl border-2 border-slate-50">
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input 
-                        type="checkbox" 
-                        checked={editingUser.isVerified || false}
-                        onChange={e => setEditingUser({...editingUser, isVerified: e.target.checked})}
-                        className="w-5 h-5 rounded text-blue-500 focus:ring-blue-500"
-                      />
-                      <span className="font-bold text-slate-700">ভেরিফাইড অ্যাকাউন্ট</span>
-                    </label>
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input 
-                        type="checkbox" 
-                        checked={editingUser.isDonor}
-                        onChange={e => setEditingUser({...editingUser, isDonor: e.target.checked})}
-                        className="w-5 h-5 rounded text-rose-500 focus:ring-rose-500"
-                      />
-                      <span className="font-bold text-slate-700">সক্রিয় রক্তদাতা</span>
-                    </label>
-                  </div>
-                </div>
-
-                <div className="space-y-2 md:col-span-2">
-                  <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">ব্যাজ (কমা দিয়ে আলাদা করুন)</label>
-                  <input 
-                    type="text" 
-                    value={editingUser.badges.join(', ')}
-                    onChange={e => setEditingUser({...editingUser, badges: e.target.value.split(',').map(b => b.trim()).filter(Boolean)})}
-                    className="w-full px-6 py-4 rounded-2xl bg-slate-50 border-2 border-slate-50 focus:border-blue-200 focus:bg-white outline-none transition-all font-bold text-slate-700"
-                    placeholder="যেমন: প্রথম রক্তদান, রক্তদাতা হিরো"
-                  />
-                </div>
-              </div>
-              
-              <div className="flex gap-4 pt-4">
-                <button 
-                  type="button"
-                  onClick={() => setEditingUser(null)}
-                  className="flex-1 px-8 py-4 rounded-2xl border-2 border-slate-100 text-slate-500 font-black hover:bg-slate-50 transition-all active:scale-95"
-                >
-                  বাতিল করুন
-                </button>
-                <button 
-                  type="submit"
-                  className="flex-1 px-8 py-4 rounded-2xl bg-blue-500 text-white font-black shadow-xl shadow-blue-500/20 hover:bg-blue-600 transition-all active:scale-95 flex items-center justify-center gap-2"
-                >
-                  <CheckCircle2 className="w-5 h-5" />
-                  সংরক্ষণ করুন
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-      {/* Edit User Modal */}
-      {editingUser && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-6 animate-in fade-in duration-300">
-          <div className="bg-white w-full max-w-2xl rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto">
-            <div className="p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 sticky top-0 z-10">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-blue-100 rounded-2xl flex items-center justify-center text-blue-500">
-                  <Edit2 className="w-6 h-6" />
-                </div>
-                <div>
                   <h3 className="text-xl font-black text-slate-800">একাউন্ট এডিট করুন</h3>
                   <p className="text-xs text-slate-500 font-bold">{editingUser.name} এর তথ্য পরিবর্তন করুন</p>
                 </div>
@@ -463,6 +357,16 @@ export default function AdminUsers() {
                   />
                 </div>
                 <div className="space-y-2">
+                  <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">রক্তদানের সংখ্যা</label>
+                  <input 
+                    type="number" 
+                    required
+                    value={editingUser.donationsCount}
+                    onChange={e => setEditingUser({...editingUser, donationsCount: parseInt(e.target.value) || 0})}
+                    className="w-full px-6 py-4 rounded-2xl bg-slate-50 border-2 border-slate-50 focus:border-blue-200 focus:bg-white outline-none transition-all font-bold text-slate-700"
+                  />
+                </div>
+                <div className="space-y-2">
                   <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">রক্তের গ্রুপ</label>
                   <select 
                     value={editingUser.bloodGroup}
@@ -486,14 +390,18 @@ export default function AdminUsers() {
                   </select>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">ব্যাজ (কমা দিয়ে আলাদা করুন)</label>
-                  <input 
-                    type="text" 
-                    value={editingUser.badges?.join(', ') || ''}
-                    onChange={e => setEditingUser({...editingUser, badges: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})}
-                    className="w-full px-6 py-4 rounded-2xl bg-slate-50 border-2 border-slate-50 focus:border-blue-200 focus:bg-white outline-none transition-all font-bold text-slate-700"
-                    placeholder="যেমন: Top Donor, Hero"
-                  />
+                  <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">ব্যাজ নির্বাচন করুন</label>
+                  <select 
+                    multiple
+                    value={editingUser.badges || []}
+                    onChange={e => setEditingUser({...editingUser, badges: Array.from(e.target.selectedOptions, option => option.value)})}
+                    className="w-full px-6 py-4 rounded-2xl bg-slate-50 border-2 border-slate-50 focus:border-blue-200 focus:bg-white outline-none transition-all font-bold text-slate-700 h-32"
+                  >
+                    {['রক্তদাতা হিরো', '৫ বার রক্তদান', 'প্রথম রক্তদান', '১০ বার রক্তদান', 'সুপার ডোনার'].map(badge => (
+                      <option key={badge} value={badge}>{badge}</option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-slate-400 font-bold ml-1">একাধিক ব্যাজ সিলেক্ট করতে Ctrl/Cmd চেপে ধরুন</p>
                 </div>
               </div>
 
