@@ -2,9 +2,10 @@ import React, { useState, useRef } from 'react';
 import { useAppStore } from '@/store/useAppStore';
 import { LogOut, Settings, Edit3, Droplet, Calendar, Award, ShieldCheck, Heart, MapPin, ArrowRight, Activity, Trophy, Camera, Check, FileText, Download, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import html2canvas from 'html2canvas';
+import { toPng } from 'html-to-image';
 import jsPDF from 'jspdf';
 import Logo from '@/assets/Logo.png';
+import { getBadgeStyle } from '@/utils/badgeUtils';
 
 export default function Profile() {
   const { currentUser, logout, toggleDonorStatus, toggleAvailability, togglePhonePrivacy, updateUser } = useAppStore();
@@ -45,14 +46,13 @@ export default function Profile() {
   const downloadIDCard = async (format: 'pdf' | 'png') => {
     if (!idCardRef.current) return;
     try {
-      const canvas = await html2canvas(idCardRef.current, { scale: 3, useCORS: true });
+      const imgData = await toPng(idCardRef.current, { pixelRatio: 3, cacheBust: true });
       if (format === 'png') {
         const link = document.createElement('a');
         link.download = `ID_Card_${currentUser.name}.png`;
-        link.href = canvas.toDataURL('image/png');
+        link.href = imgData;
         link.click();
       } else {
-        const imgData = canvas.toDataURL('image/png');
         const pdf = new jsPDF({
           orientation: 'portrait',
           unit: 'mm',
@@ -174,11 +174,14 @@ export default function Profile() {
             <Award className="w-4 h-4 text-amber-500" /> অর্জনসমূহ
           </h4>
           <div className="flex flex-wrap gap-3">
-            {currentUser.badges.map((badge, idx) => (
-              <div key={idx} className="flex items-center gap-2 bg-amber-50 text-amber-700 px-4 py-2 rounded-2xl border border-amber-100 font-bold text-xs shadow-sm">
-                <Award className="w-4 h-4" /> {badge}
-              </div>
-            ))}
+            {currentUser.badges.map((badge, idx) => {
+              const { icon: Icon, bg, text } = getBadgeStyle(badge);
+              return (
+                <div key={idx} className={`flex items-center gap-2 ${bg} ${text} px-4 py-2 rounded-2xl border ${bg.replace('bg-', 'border-')} font-bold text-xs shadow-sm`}>
+                  <Icon className="w-4 h-4" /> {badge}
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
@@ -237,6 +240,7 @@ export default function Profile() {
             {/* The ID Card */}
             <div className="flex justify-center overflow-hidden py-4">
               <div 
+                id="pdf-id-card-content"
                 ref={idCardRef}
                 style={{ 
                   width: '216px',
@@ -248,7 +252,7 @@ export default function Profile() {
                   backgroundImage: 'url("https://www.transparenttextures.com/patterns/cubes.png")',
                   backgroundColor: '#ffffff',
                   border: '1px solid #e2e8f0',
-                  fontFamily: 'sans-serif'
+                  fontFamily: '"Hind Siliguri", sans-serif'
                 }}
               >
                 {/* Logo and Header */}
@@ -451,7 +455,7 @@ export default function Profile() {
         </button>
 
         {/* Admin Panel Link */}
-        {currentUser.role === 'admin' && (
+        {(currentUser.role === 'admin' || currentUser.role === 'moderator') && (
           <button 
             onClick={() => navigate('/admin/dashboard')}
             className="w-full p-6 flex items-center justify-between border-b border-slate-50 hover:bg-indigo-50/50 transition-colors text-left group"
@@ -461,7 +465,7 @@ export default function Profile() {
                 <ShieldCheck className="w-6 h-6" />
               </div>
               <div>
-                <p className="font-black text-slate-800">অ্যাডমিন ড্যাশবোর্ড</p>
+                <p className="font-black text-slate-800">{currentUser.role === 'admin' ? 'অ্যাডমিন ড্যাশবোর্ড' : 'মডারেটর ড্যাশবোর্ড'}</p>
                 <p className="text-xs text-slate-500 font-bold">সিস্টেম পরিচালনা করুন</p>
               </div>
             </div>

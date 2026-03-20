@@ -1,7 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Hind Siliguri", "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 }
 
@@ -41,4 +42,25 @@
 
 .dark .text-rose-500, .dark .text-red-600 {
   color: #fb7185 !important;
+}
+
+/* Fix for html2canvas oklch color parsing error */
+#pdf-export-content, #pdf-export-content *, #pdf-export-content ::before, #pdf-export-content ::after,
+#pdf-report-content, #pdf-report-content *, #pdf-report-content ::before, #pdf-report-content ::after,
+.pdf-report-card, .pdf-report-card *, .pdf-report-card ::before, .pdf-report-card ::after,
+#pdf-id-card-content, #pdf-id-card-content *, #pdf-id-card-content ::before, #pdf-id-card-content ::after {
+  border-color: #e2e8f0 !important;
+  outline-color: transparent !important;
+  text-decoration-color: transparent !important;
+  column-rule-color: transparent !important;
+  caret-color: transparent !important;
+  -webkit-text-stroke-color: transparent !important;
+  accent-color: transparent !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+
+#pdf-export-content, #pdf-report-content, #pdf-id-card-content, .pdf-report-card {
+  background-color: #ffffff;
+  color: #1e293b;
 }

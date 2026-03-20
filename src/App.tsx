@@ -31,6 +31,7 @@ import AdminAnalytics from '@/pages/admin/AdminAnalytics';
 import AdminSettings from '@/pages/admin/AdminSettings';
 import AdminVolunteers from '@/pages/admin/AdminVolunteers';
 import AdminDonations from '@/pages/admin/AdminDonations';
+import AdminCampaign from '@/pages/admin/AdminCampaign';
 
 export default function App() {
   const { currentUser, theme } = useAppStore();
@@ -44,7 +45,7 @@ export default function App() {
         {/* Mobile App Routes */}
         <Route path="/" element={
           currentUser ? (
-            currentUser.role === 'admin' ? <Navigate to="/admin/dashboard" replace /> : <Navigate to="/home" replace />
+            (currentUser.role === 'admin' || currentUser.role === 'moderator') ? <Navigate to="/admin/dashboard" replace /> : <Navigate to="/home" replace />
           ) : (
             <Navigate to="/login" replace />
           )
@@ -73,15 +74,16 @@ export default function App() {
 
         {/* Admin Panel Routes */}
         <Route path="/admin" element={
-          currentUser?.role === 'admin' ? <AdminLayout /> : <Navigate to="/login" replace />
+          (currentUser?.role === 'admin' || currentUser?.role === 'moderator') ? <AdminLayout /> : <Navigate to="/login" replace />
         }>
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="users" element={<AdminUsers />} />
           <Route path="requests" element={<AdminRequests />} />
           <Route path="volunteers" element={<AdminVolunteers />} />
           <Route path="donations" element={<AdminDonations />} />
-          <Route path="analytics" element={<AdminAnalytics />} />
-          <Route path="settings" element={<AdminSettings />} />
+          <Route path="campaign" element={<AdminCampaign />} />
+          <Route path="analytics" element={currentUser?.role === 'admin' ? <AdminAnalytics /> : <Navigate to="/admin/dashboard" replace />} />
+          <Route path="settings" element={currentUser?.role === 'admin' ? <AdminSettings /> : <Navigate to="/admin/dashboard" replace />} />
           <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
         </Route>
         

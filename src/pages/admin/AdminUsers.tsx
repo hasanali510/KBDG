@@ -3,17 +3,9 @@ import { useAppStore, User } from '@/store/useAppStore';
 import { Search, Filter, MoreVertical, Edit2, Trash2, ShieldCheck, UserX, Bell, CheckCircle2, XCircle, Loader2, Droplet, Download, BadgeCheck, Award } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-
-const getBadgeStyle = (badge: string) => {
-  switch (badge) {
-    case 'রক্তদাতা হিরো': return { icon: Award, bg: 'bg-amber-100', text: 'text-amber-700' };
-    case '৫ বার রক্তদান': return { icon: Droplet, bg: 'bg-rose-100', text: 'text-rose-700' };
-    case 'প্রথম রক্তদান': return { icon: CheckCircle2, bg: 'bg-blue-100', text: 'text-blue-700' };
-    case '১০ বার রক্তদান': return { icon: ShieldCheck, bg: 'bg-emerald-100', text: 'text-emerald-700' };
-    case 'সুপার ডোনার': return { icon: BadgeCheck, bg: 'bg-purple-100', text: 'text-purple-700' };
-    default: return { icon: Award, bg: 'bg-slate-100', text: 'text-slate-700' };
-  }
-};
+import { toPng } from 'html-to-image';
+import { getBadgeStyle } from '@/utils/badgeUtils';
+import Logo from '@/assets/Logo.png';
 
 export default function AdminUsers() {
   const { users, sendNotification, updateUser } = useAppStore();
@@ -21,6 +13,7 @@ export default function AdminUsers() {
   const [selectedUser, setSelectedUser] = useState<string | null>(null);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [isNotifying, setIsNotifying] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   const [notifData, setNotifData] = useState({ title: '', message: '' });
 
   const filteredUsers = users.filter(user => 
@@ -28,28 +21,38 @@ export default function AdminUsers() {
     user.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleExportPDF = () => {
-    const doc = new jsPDF();
-    doc.text("Blood Donors List", 14, 15);
-    
-    const tableColumn = ["Name", "Email", "Phone", "Blood Group", "Location", "Donations", "Status"];
-    const tableRows = filteredUsers.map(user => [
-      user.name,
-      user.email,
-      user.phone,
-      user.bloodGroup,
-      user.location,
-      user.donationsCount.toString(),
-      user.isVerified ? 'Verified' : 'Unverified'
-    ]);
+  const handleExportPDF = async () => {
+    setIsExporting(true);
+    const element = document.getElementById('pdf-export-content');
+    if (!element) {
+      setIsExporting(false);
+      return;
+    }
 
-    autoTable(doc, {
-      head: [tableColumn],
-      body: tableRows,
-      startY: 20,
-    });
-    
-    doc.save("blood_donors.pdf");
+    try {
+      const imgData = await toPng(element, { 
+        pixelRatio: 2,
+        cacheBust: true
+      });
+      
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
+
+      // We need to calculate the dimensions based on the element's actual size
+      const rect = element.getBoundingClientRect();
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (rect.height * pdfWidth) / rect.width;
+      
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      pdf.save(`Blood_Donors_List_${new Date().toLocaleDateString('en-GB').replace(/\//g, '-')}.pdf`);
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   const handleUpdateUser = (e: React.FormEvent) => {
@@ -106,9 +109,11 @@ export default function AdminUsers() {
             </button>
             <button 
               onClick={handleExportPDF}
-              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-4 bg-rose-50 border-2 border-rose-100 rounded-2xl text-rose-600 font-black text-sm hover:bg-rose-100 transition-all shadow-sm active:scale-95"
+              disabled={isExporting}
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-4 bg-rose-50 border-2 border-rose-100 rounded-2xl text-rose-600 font-black text-sm hover:bg-rose-100 transition-all shadow-sm active:scale-95 disabled:opacity-70"
             >
-              <Download className="w-5 h-5" /> PDF এক্সপোর্ট
+              {isExporting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Download className="w-5 h-5" />}
+              {isExporting ? 'তৈরি হচ্ছে...' : 'PDF এক্সপোর্ট'}
             </button>
           </div>
         </div>
@@ -140,6 +145,7 @@ export default function AdminUsers() {
                           <p className="font-black text-slate-800 text-base">{user.name}</p>
                           {user.isVerified && <BadgeCheck className="w-4 h-4 text-blue-500" title="Verified" />}
                           {user.role === 'admin' && <ShieldCheck className="w-4 h-4 text-rose-500" title="Admin" />}
+                          {user.role === 'moderator' && <ShieldCheck className="w-4 h-4 text-amber-500" title="Moderator" />}
                         </div>
                         <p className="text-xs text-slate-400 font-bold">{user.location}</p>
                         {user.badges && user.badges.length > 0 && (
@@ -382,10 +388,11 @@ export default function AdminUsers() {
                   <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">রোল</label>
                   <select 
                     value={editingUser.role}
-                    onChange={e => setEditingUser({...editingUser, role: e.target.value as 'user' | 'admin'})}
+                    onChange={e => setEditingUser({...editingUser, role: e.target.value as 'user' | 'admin' | 'moderator'})}
                     className="w-full px-6 py-4 rounded-2xl bg-slate-50 border-2 border-slate-50 focus:border-blue-200 focus:bg-white outline-none transition-all font-bold text-slate-700"
                   >
                     <option value="user">User</option>
+                    <option value="moderator">Moderator</option>
                     <option value="admin">Admin</option>
                   </select>
                 </div>
@@ -394,7 +401,10 @@ export default function AdminUsers() {
                   <select 
                     multiple
                     value={editingUser.badges || []}
-                    onChange={e => setEditingUser({...editingUser, badges: Array.from(e.target.selectedOptions, option => option.value)})}
+                    onChange={e => {
+                      const options = (e.target as HTMLSelectElement).selectedOptions;
+                      setEditingUser({...editingUser, badges: Array.from(options).map(option => option.value)});
+                    }}
                     className="w-full px-6 py-4 rounded-2xl bg-slate-50 border-2 border-slate-50 focus:border-blue-200 focus:bg-white outline-none transition-all font-bold text-slate-700 h-32"
                   >
                     {['রক্তদাতা হিরো', '৫ বার রক্তদান', 'প্রথম রক্তদান', '১০ বার রক্তদান', 'সুপার ডোনার'].map(badge => (
@@ -449,6 +459,58 @@ export default function AdminUsers() {
           </div>
         </div>
       )}
+      {/* Hidden PDF Export Content */}
+      <div className="absolute left-[-9999px] top-[-9999px]">
+        <div id="pdf-export-content" className="p-10 w-[210mm] min-h-[297mm] font-sans" style={{ backgroundColor: '#ffffff', color: '#1e293b', fontFamily: '"Hind Siliguri", sans-serif' }}>
+          {/* Header */}
+          <div className="flex items-center justify-between pb-6 mb-6" style={{ borderBottom: '4px solid #f43f5e' }}>
+            <div className="flex items-center gap-4">
+              <img src={Logo} alt="Logo" className="w-20 h-20 object-contain" />
+              <div>
+                <h1 className="text-3xl font-black" style={{ color: '#e11d48' }}>খানসামা রক্তদান গ্রুপ</h1>
+                <p className="text-sm font-bold" style={{ color: '#64748b' }}>জীবন বাঁচাতে আমরা অঙ্গীকারবদ্ধ</p>
+              </div>
+            </div>
+            <div className="text-right">
+              <h2 className="text-xl font-black" style={{ color: '#1e293b' }}>রক্তদাতাদের তালিকা</h2>
+              <p className="text-sm font-bold" style={{ color: '#64748b' }}>তারিখ: {new Date().toLocaleDateString('bn-BD')}</p>
+            </div>
+          </div>
+
+          {/* Table */}
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="text-sm" style={{ backgroundColor: '#fff1f2', color: '#be123c' }}>
+                <th className="p-3 font-bold" style={{ border: '1px solid #ffe4e6' }}>নাম</th>
+                <th className="p-3 font-bold" style={{ border: '1px solid #ffe4e6' }}>ফোন</th>
+                <th className="p-3 font-bold text-center" style={{ border: '1px solid #ffe4e6' }}>রক্তের গ্রুপ</th>
+                <th className="p-3 font-bold" style={{ border: '1px solid #ffe4e6' }}>ঠিকানা</th>
+                <th className="p-3 font-bold text-center" style={{ border: '1px solid #ffe4e6' }}>রক্তদান</th>
+                <th className="p-3 font-bold text-center" style={{ border: '1px solid #ffe4e6' }}>স্ট্যাটাস</th>
+              </tr>
+            </thead>
+            <tbody className="text-sm">
+              {filteredUsers.map((user, idx) => (
+                <tr key={user.id} style={{ backgroundColor: idx % 2 === 0 ? '#ffffff' : '#f8fafc' }}>
+                  <td className="p-3 font-bold" style={{ border: '1px solid #e2e8f0' }}>{user.name}</td>
+                  <td className="p-3" style={{ border: '1px solid #e2e8f0' }}>{user.phone}</td>
+                  <td className="p-3 font-bold text-center" style={{ border: '1px solid #e2e8f0', color: '#e11d48' }}>{user.bloodGroup}</td>
+                  <td className="p-3" style={{ border: '1px solid #e2e8f0' }}>{user.location}</td>
+                  <td className="p-3 text-center font-bold" style={{ border: '1px solid #e2e8f0' }}>{user.donationsCount}</td>
+                  <td className="p-3 text-center" style={{ border: '1px solid #e2e8f0' }}>
+                    {user.isDonor ? 'সক্রিয়' : 'নিষ্ক্রিয়'}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          
+          {/* Footer */}
+          <div className="mt-10 pt-6 text-center text-xs font-bold" style={{ borderTop: '1px solid #e2e8f0', color: '#94a3b8' }}>
+            এই ডকুমেন্টটি খানসামা রক্তদান গ্রুপ কর্তৃক স্বয়ংক্রিয়ভাবে তৈরি করা হয়েছে।
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

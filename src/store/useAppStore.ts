@@ -13,7 +13,7 @@ export type User = {
   isAvailable: boolean;
   hidePhone: boolean;
   donationsCount: number;
-  role: 'user' | 'admin';
+  role: 'user' | 'admin' | 'moderator';
   badges: string[];
   isVerified?: boolean;
   bio?: string;
@@ -84,6 +84,17 @@ export type FundDonation = {
   status: 'pending' | 'verified';
 };
 
+export type Campaign = {
+  id: string;
+  name: string;
+  date: string;
+  location: string;
+  status: 'active' | 'completed';
+  donorsAddedCount: number;
+  reportsGeneratedCount: number;
+  createdAt: string;
+};
+
 interface AppState {
   currentUser: User | null;
   users: User[];
@@ -93,12 +104,14 @@ interface AppState {
   messages: ChatMessage[];
   volunteerApplications: VolunteerApplication[];
   fundDonations: FundDonation[];
+  campaigns: Campaign[];
   theme: 'light' | 'dark';
   login: (user: User) => void;
   register: (user: Omit<User, 'id' | 'donationsCount' | 'role' | 'badges' | 'lastDonationDate' | 'isVerified'>) => void;
   logout: () => void;
   updateProfile: (updates: Partial<User>) => void;
   updateUser: (id: string, updates: Partial<User>) => void;
+  addUser: (user: Omit<User, 'id'>) => void;
   addRequest: (request: Omit<BloodRequest, 'id' | 'createdAt' | 'status' | 'acceptedById'>) => void;
   cancelRequest: (requestId: string) => void;
   acceptRequest: (requestId: string, donorId: string) => void;
@@ -116,6 +129,11 @@ interface AppState {
   donateToFund: (donation: Omit<FundDonation, 'id' | 'date' | 'status'>) => void;
   updateVolunteerStatus: (id: string, status: VolunteerApplication['status']) => void;
   verifyFundDonation: (id: string) => void;
+  addCampaign: (campaign: Omit<Campaign, 'id' | 'createdAt' | 'donorsAddedCount' | 'reportsGeneratedCount'>) => void;
+  updateCampaign: (id: string, updates: Partial<Campaign>) => void;
+  deleteCampaign: (id: string) => void;
+  incrementCampaignDonors: (id: string) => void;
+  incrementCampaignReports: (id: string) => void;
   toggleTheme: () => void;
 }
 
@@ -235,6 +253,7 @@ export const useAppStore = create<AppState>()(
       messages: [],
       volunteerApplications: [],
       fundDonations: [],
+      campaigns: [],
       theme: 'light',
       login: (user) => set({ currentUser: user }),
       register: (userData) => set((state) => {
@@ -260,6 +279,9 @@ export const useAppStore = create<AppState>()(
       updateUser: (id, updates) => set((state) => ({
         users: state.users.map(u => u.id === id ? { ...u, ...updates } : u),
         currentUser: state.currentUser?.id === id ? { ...state.currentUser, ...updates } : state.currentUser
+      })),
+      addUser: (user) => set((state) => ({
+        users: [{ ...user, id: Math.random().toString(36).substring(7) }, ...state.users]
       })),
       addRequest: (request) => set((state) => ({
         requests: [
@@ -363,6 +385,30 @@ export const useAppStore = create<AppState>()(
       })),
       verifyFundDonation: (id) => set((state) => ({
         fundDonations: state.fundDonations.map(d => d.id === id ? { ...d, status: 'verified' } : d)
+      })),
+      addCampaign: (campaign) => set((state) => ({
+        campaigns: [
+          {
+            ...campaign,
+            id: Math.random().toString(36).substring(7),
+            donorsAddedCount: 0,
+            reportsGeneratedCount: 0,
+            createdAt: new Date().toISOString(),
+          },
+          ...state.campaigns
+        ]
+      })),
+      updateCampaign: (id, updates) => set((state) => ({
+        campaigns: state.campaigns.map(c => c.id === id ? { ...c, ...updates } : c)
+      })),
+      deleteCampaign: (id) => set((state) => ({
+        campaigns: state.campaigns.filter(c => c.id !== id)
+      })),
+      incrementCampaignDonors: (id) => set((state) => ({
+        campaigns: state.campaigns.map(c => c.id === id ? { ...c, donorsAddedCount: c.donorsAddedCount + 1 } : c)
+      })),
+      incrementCampaignReports: (id) => set((state) => ({
+        campaigns: state.campaigns.map(c => c.id === id ? { ...c, reportsGeneratedCount: c.reportsGeneratedCount + 1 } : c)
       })),
       toggleTheme: () => set((state) => ({ theme: state.theme === 'light' ? 'dark' : 'light' })),
       toggleDonorStatus: () => set((state) => ({
