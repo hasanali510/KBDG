@@ -32,6 +32,11 @@ import AdminSettings from '@/pages/admin/AdminSettings';
 import AdminVolunteers from '@/pages/admin/AdminVolunteers';
 import AdminDonations from '@/pages/admin/AdminDonations';
 import AdminCampaign from '@/pages/admin/AdminCampaign';
+import AdminFinance from '@/pages/admin/AdminFinance';
+import AdminCommittee from '@/pages/admin/AdminCommittee';
+import AdminNotices from '@/pages/admin/AdminNotices';
+import AdminSubscriptions from '@/pages/admin/AdminSubscriptions';
+import AdminIDCard from '@/pages/admin/AdminIDCard';
 
 export default function App() {
   const { currentUser, theme } = useAppStore();
@@ -81,6 +86,11 @@ export default function App() {
           <Route path="requests" element={<AdminRequests />} />
           <Route path="volunteers" element={<AdminVolunteers />} />
           <Route path="donations" element={<AdminDonations />} />
+          <Route path="finance" element={<AdminFinance />} />
+          <Route path="subscriptions" element={<AdminSubscriptions />} />
+          <Route path="committee" element={<AdminCommittee />} />
+          <Route path="id-cards" element={<AdminIDCard />} />
+          <Route path="notices" element={<AdminNotices />} />
           <Route path="campaign" element={<AdminCampaign />} />
           <Route path="analytics" element={currentUser?.role === 'admin' ? <AdminAnalytics /> : <Navigate to="/admin/dashboard" replace />} />
           <Route path="settings" element={currentUser?.role === 'admin' ? <AdminSettings /> : <Navigate to="/admin/dashboard" replace />} />

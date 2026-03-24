@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Users, Droplet, Activity, Settings, LogOut, Menu, X, UserPlus, Wallet, Tent } from 'lucide-react';
+import { LayoutDashboard, Users, Droplet, Activity, Settings, LogOut, Menu, X, UserPlus, Wallet, Tent, Banknote, Shield, Bell, Receipt, Badge as BadgeIcon } from 'lucide-react';
 import Logo from '@/assets/Logo.png';
 import { useAppStore } from '@/store/useAppStore';
 
@@ -50,10 +50,15 @@ export default function AdminLayout() {
         <nav className="flex-1 p-6 space-y-2 overflow-y-auto">
           <NavItem to="/admin/dashboard" icon={<LayoutDashboard size={20} />} label="ড্যাশবোর্ড" onClick={() => setIsSidebarOpen(false)} />
           <NavItem to="/admin/users" icon={<Users size={20} />} label="ব্যবহারকারী" onClick={() => setIsSidebarOpen(false)} />
+          <NavItem to="/admin/id-cards" icon={<BadgeIcon size={20} />} label="আইডি কার্ড" onClick={() => setIsSidebarOpen(false)} />
+          <NavItem to="/admin/committee" icon={<Shield size={20} />} label="কমিটি" onClick={() => setIsSidebarOpen(false)} />
           <NavItem to="/admin/campaign" icon={<Tent size={20} />} label="ক্যাম্পেইন" onClick={() => setIsSidebarOpen(false)} />
           <NavItem to="/admin/requests" icon={<Droplet size={20} />} label="রক্তের অনুরোধ" onClick={() => setIsSidebarOpen(false)} />
           <NavItem to="/admin/volunteers" icon={<UserPlus size={20} />} label="সেচ্ছাসেবী আবেদন" onClick={() => setIsSidebarOpen(false)} />
           <NavItem to="/admin/donations" icon={<Wallet size={20} />} label="তহবিল অনুদান" onClick={() => setIsSidebarOpen(false)} />
+          <NavItem to="/admin/subscriptions" icon={<Receipt size={20} />} label="মাসিক চাঁদা" onClick={() => setIsSidebarOpen(false)} />
+          <NavItem to="/admin/finance" icon={<Banknote size={20} />} label="হিসাবরক্ষণ" onClick={() => setIsSidebarOpen(false)} />
+          <NavItem to="/admin/notices" icon={<Bell size={20} />} label="নোটিশ বোর্ড" onClick={() => setIsSidebarOpen(false)} />
           {currentUser?.role === 'admin' && (
             <>
               <NavItem to="/admin/analytics" icon={<Activity size={20} />} label="অ্যানালিটিক্স" onClick={() => setIsSidebarOpen(false)} />

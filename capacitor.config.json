@@ -1,0 +1,11 @@
+{
+  "appId": "com.khansama.blooddonation",
+  "appName": "Khansama Blood Donation",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https",
+    "hostname": "localhost",
+    "cleartext": true
+  }
+}

@@ -95,6 +95,44 @@ export type Campaign = {
   createdAt: string;
 };
 
+export type Expense = {
+  id: string;
+  title: string;
+  amount: number;
+  category: string;
+  date: string;
+  description: string;
+  addedBy: string;
+};
+
+export type CommitteeMember = {
+  id: string;
+  userId: string;
+  designation: string;
+  department: string;
+  joinDate: string;
+  status: 'active' | 'former';
+};
+
+export type Notice = {
+  id: string;
+  title: string;
+  content: string;
+  date: string;
+  authorId: string;
+  isImportant: boolean;
+};
+
+export type Subscription = {
+  id: string;
+  userId: string;
+  month: string;
+  year: number;
+  amount: number;
+  status: 'paid' | 'pending';
+  date: string;
+};
+
 interface AppState {
   currentUser: User | null;
   users: User[];
@@ -105,6 +143,10 @@ interface AppState {
   volunteerApplications: VolunteerApplication[];
   fundDonations: FundDonation[];
   campaigns: Campaign[];
+  expenses: Expense[];
+  committeeMembers: CommitteeMember[];
+  notices: Notice[];
+  subscriptions: Subscription[];
   theme: 'light' | 'dark';
   login: (user: User) => void;
   register: (user: Omit<User, 'id' | 'donationsCount' | 'role' | 'badges' | 'lastDonationDate' | 'isVerified'>) => void;
@@ -134,6 +176,14 @@ interface AppState {
   deleteCampaign: (id: string) => void;
   incrementCampaignDonors: (id: string) => void;
   incrementCampaignReports: (id: string) => void;
+  addExpense: (expense: Omit<Expense, 'id'>) => void;
+  deleteExpense: (id: string) => void;
+  addCommitteeMember: (member: Omit<CommitteeMember, 'id'>) => void;
+  updateCommitteeMember: (id: string, updates: Partial<CommitteeMember>) => void;
+  removeCommitteeMember: (id: string) => void;
+  addNotice: (notice: Omit<Notice, 'id'>) => void;
+  deleteNotice: (id: string) => void;
+  addSubscription: (subscription: Omit<Subscription, 'id'>) => void;
   toggleTheme: () => void;
 }
 
@@ -254,6 +304,10 @@ export const useAppStore = create<AppState>()(
       volunteerApplications: [],
       fundDonations: [],
       campaigns: [],
+      expenses: [],
+      committeeMembers: [],
+      notices: [],
+      subscriptions: [],
       theme: 'light',
       login: (user) => set({ currentUser: user }),
       register: (userData) => set((state) => {
@@ -409,6 +463,30 @@ export const useAppStore = create<AppState>()(
       })),
       incrementCampaignReports: (id) => set((state) => ({
         campaigns: state.campaigns.map(c => c.id === id ? { ...c, reportsGeneratedCount: c.reportsGeneratedCount + 1 } : c)
+      })),
+      addExpense: (expense) => set((state) => ({
+        expenses: [{ ...expense, id: Date.now().toString() }, ...state.expenses]
+      })),
+      deleteExpense: (id) => set((state) => ({
+        expenses: state.expenses.filter(e => e.id !== id)
+      })),
+      addCommitteeMember: (member) => set((state) => ({
+        committeeMembers: [{ ...member, id: Date.now().toString() }, ...state.committeeMembers]
+      })),
+      updateCommitteeMember: (id, updates) => set((state) => ({
+        committeeMembers: state.committeeMembers.map(m => m.id === id ? { ...m, ...updates } : m)
+      })),
+      removeCommitteeMember: (id) => set((state) => ({
+        committeeMembers: state.committeeMembers.filter(m => m.id !== id)
+      })),
+      addNotice: (notice) => set((state) => ({
+        notices: [{ ...notice, id: Date.now().toString() }, ...state.notices]
+      })),
+      deleteNotice: (id) => set((state) => ({
+        notices: state.notices.filter(n => n.id !== id)
+      })),
+      addSubscription: (subscription) => set((state) => ({
+        subscriptions: [{ ...subscription, id: Date.now().toString() }, ...state.subscriptions]
       })),
       toggleTheme: () => set((state) => ({ theme: state.theme === 'light' ? 'dark' : 'light' })),
       toggleDonorStatus: () => set((state) => ({
